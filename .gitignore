@@ -3,3 +3,10 @@
 
 # Executables
 *.exe
+
+# cmake testing
+/testing/CMakeFiles/*
+/testing/CMakeCache.txt
+/testing/Makefile
+/testing/runTests
+/testing/*cmake
