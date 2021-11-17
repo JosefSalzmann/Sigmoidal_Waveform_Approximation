@@ -3,6 +3,7 @@ CXXFLAGS = -Wall
 
 SRC_DIR = ./src
 OBJ_DIR = ./obj
+TEST_DIR = ./testing
 MAIN = main
 OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/circuit_file_parser.o
@@ -20,3 +21,8 @@ clean:
 
 check:
 	cppcheck $(SRC_DIR)/*.cpp --enable=all --suppress=missingIncludeSystem
+
+tests:
+	cmake $(TEST_DIR)/CMakeLists.txt
+	(cd $(TEST_DIR) && make)
+	$(TEST_DIR)/runTests
