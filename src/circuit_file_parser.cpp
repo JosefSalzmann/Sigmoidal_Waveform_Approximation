@@ -64,6 +64,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 			}
 		}
 	}
+	input_file_stream.close();
 	if (parsing_failed) {
 		return -1;
 	}
@@ -72,18 +73,18 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 
 /**
  * Check that each circuit node has exactly one source and atleast one sink.
- * Nodes with more than one source abortion.
+ * Nodes with more than one source cause abortion.
  * TODO: Maybe cause abortion when a sink has no source?
 */
 bool CircuitFileParser::PerformSanityCheck() {
 	std::multiset<std::string> source_names, sink_names;
 
 	for (auto it = inputs.begin(); it != inputs.end(); it++) {
-		std::cout << (*it).node_name << std::endl;
 		source_names.insert((*it).node_name);
 	}
 
 	for (auto it = gates.begin(); it != gates.end(); it++) {
+		std::cout << (*it).ouput_name << std::endl;
 		source_names.insert((*it).ouput_name);
 		sink_names.insert((*it).input1_name);
 		sink_names.insert((*it).input2_name);
@@ -152,26 +153,26 @@ ParsedInput CircuitFileParser::GetParsedInput(const std::string& line) {
 	ParsedInput input;
 	int substring_start = 0;
 	int substring_end = line.find(' ');
-	input.node_name = line.substr(substring_start, substring_end);
+	input.node_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	input.file_name = line.substr(substring_start, substring_end);
+	input.file_name = line.substr(substring_start, substring_end - substring_start);
 	return input;
 }
 ParsedGate CircuitFileParser::GetParsedGate(const std::string& line) {
 	ParsedGate gate;
 	int substring_start = 0;
 	int substring_end = line.find(' ');
-	gate.gate_name = line.substr(substring_start, substring_end);
+	gate.gate_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	gate.ouput_name = line.substr(substring_start, substring_end);
+	gate.ouput_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	gate.input1_name = line.substr(substring_start, substring_end);
+	gate.input1_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	gate.input2_name = line.substr(substring_start, substring_end);
+	gate.input2_name = line.substr(substring_start, substring_end - substring_start);
 	return gate;
 }
 ParsedOutput CircuitFileParser::GetParsedOutput(const std::string& line) {

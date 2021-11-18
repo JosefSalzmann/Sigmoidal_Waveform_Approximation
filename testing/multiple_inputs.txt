@@ -1,0 +1,6 @@
+* test multiple inputs with same node
+INPUTS
+IN1 asdf.txt
+IN1 asdf.txt
+GATES
+OUTPUTS

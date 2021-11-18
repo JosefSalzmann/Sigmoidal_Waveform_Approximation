@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall
+CXXFLAGS = -Wall -g
 
 SRC_DIR = ./src
 OBJ_DIR = ./obj
@@ -17,7 +17,7 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 all: $(MAIN)
 
 clean:
-	rm $(OBJ_DIR)/*.o $(MAIN)
+	rm $(OBJ_DIR)/*.o $(MAIN) runTests
 
 check:
 	cppcheck $(SRC_DIR)/*.cpp --enable=all --suppress=missingIncludeSystem
@@ -25,4 +25,4 @@ check:
 tests:
 	cmake $(TEST_DIR)/CMakeLists.txt
 	(cd $(TEST_DIR) && make)
-	$(TEST_DIR)/runTests
+	mv $(TEST_DIR)/runTests .
