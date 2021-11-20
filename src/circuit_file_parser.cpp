@@ -10,6 +10,8 @@
 #include <set>
 #include <string>
 
+#include "datatypes.h"
+
 int CircuitFileParser::ParseFile(const std::string& file_name) {
 	int current_section = -1;  // 0 = input, 1 = gates, 2 = outputs
 
@@ -84,7 +86,7 @@ bool CircuitFileParser::PerformSanityCheck() {
 	}
 
 	for (auto it = gates.begin(); it != gates.end(); it++) {
-		std::cout << (*it).ouput_name << std::endl;
+		// std::cout << (*it).ouput_name << std::endl;
 		source_names.insert((*it).ouput_name);
 		sink_names.insert((*it).input1_name);
 		sink_names.insert((*it).input2_name);

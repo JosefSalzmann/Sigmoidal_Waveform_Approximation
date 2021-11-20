@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "circuit_file_parser.h"
+#include "datatypes.h"
 
 int main() {
 	CircuitFileParser circuit_file_parser = CircuitFileParser();
