@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "datatypes.h"
+#include "nor_gate.h"
 
 class CircuitFileParser {
    private:
@@ -23,6 +24,8 @@ class CircuitFileParser {
 	std::vector<ParsedInput>& GetInputs();
 	std::vector<ParsedGate>& GetGates();
 	std::vector<ParsedOutput>& GetOutputs();
+	// std::vector<NORGateInput> GetInputSubscribers(ParsedInput Input);
+	// std::vector<NORGateInput> GetGateSubscribers(ParsedGate Gate);
 
    private:
 	int CountSpaces(const std::string& line);

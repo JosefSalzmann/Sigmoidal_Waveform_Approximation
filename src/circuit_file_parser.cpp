@@ -88,12 +88,18 @@ bool CircuitFileParser::PerformSanityCheck() {
 	for (auto it = gates.begin(); it != gates.end(); it++) {
 		// std::cout << (*it).ouput_name << std::endl;
 		source_names.insert((*it).ouput_name);
-		sink_names.insert((*it).input1_name);
-		sink_names.insert((*it).input2_name);
+		std::string input_a_name = (*it).input_a_name;
+		if (input_a_name.compare("GND") != 0 &&
+		    input_a_name.compare("VDD") != 0)
+			sink_names.insert((*it).input_a_name);
+		std::string input_b_name = (*it).input_b_name;
+		if (input_b_name.compare("GND") != 0 &&
+		    input_b_name.compare("VDD") != 0)
+			sink_names.insert((*it).input_b_name);
 	}
 
 	for (auto it = outputs.begin(); it != outputs.end(); it++) {
-		source_names.insert((*it).node_name);
+		sink_names.insert((*it).node_name);
 	}
 
 	// look for duplicates in the sink multi set
@@ -171,10 +177,10 @@ ParsedGate CircuitFileParser::GetParsedGate(const std::string& line) {
 	gate.ouput_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	gate.input1_name = line.substr(substring_start, substring_end - substring_start);
+	gate.input_a_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	gate.input2_name = line.substr(substring_start, substring_end - substring_start);
+	gate.input_b_name = line.substr(substring_start, substring_end - substring_start);
 	return gate;
 }
 ParsedOutput CircuitFileParser::GetParsedOutput(const std::string& line) {

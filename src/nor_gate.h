@@ -10,6 +10,24 @@
 #include "datatypes.h"
 
 struct NORGateInput;
+struct Transition;
+
+enum InitialValue {
+	GND,
+	VDD,
+	UNDEFINED
+};
+
+enum Input {
+	Input_A,
+	Input_B
+};
+
+class NORGate;
+struct NORGateInput {
+	std::unique_ptr<NORGate> nor_gate;
+	Input input;
+};
 
 class NORGate {
    private:
@@ -32,23 +50,20 @@ class NORGate {
 	                                     initial_input_a{UNDEFINED},
 	                                     initial_input_b{UNDEFINED},
 	                                     initial_output{VDD},
+	                                     subscribers{},
 	                                     transfer_functions{transfer_functions} {};
 	~NORGate();
 	std::string GetName();
 	InitialValue GetInitialOutput();
+	InitialValue GetInitialInput(Input input);
 	void SetInitialInput(InitialValue initial_value, Input input);
 	std::vector<std::shared_ptr<NORGateInput>>& GetSubscribers();
 	std::string GetOutputNodeName();
 	std::vector<std::shared_ptr<Transition>>& GetOutputTransitions();
-	void AddSbuscriber(std::shared_ptr<NORGateInput> subscriber);
+	void AddSubscriber(std::shared_ptr<NORGateInput> subscriber);
 	void RemoveOutputTransition(std::shared_ptr<Transition> transition);
 	void RemoveInputTransition(std::shared_ptr<Transition> transition, Input input);
 	std::vector<std::shared_ptr<Transition>> PropagateTransition(std::shared_ptr<Transition> transition, Input input);
-};
-
-struct NORGateInput {
-	std::unique_ptr<NORGate> nor_gate;
-	Input input;
 };
 
 #endif
