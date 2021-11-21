@@ -24,32 +24,40 @@ enum Input {
 };
 
 class NORGate;
+
 struct NORGateInput {
 	std::unique_ptr<NORGate> nor_gate;
 	Input input;
 };
 
-class NORGate {
+class TransitionSource {
+   public:
+	virtual ~TransitionSource() {}
+	virtual std::vector<std::shared_ptr<NORGateInput>>& GetSubscribers() = 0;
+};
+
+class NORGate : public TransitionSource {
    private:
 	std::string gate_name;
 	std::string output_node_name;
 	std::vector<std::shared_ptr<Transition>> input_a_transitions;
 	std::vector<std::shared_ptr<Transition>> input_b_transitions;
 	std::vector<std::shared_ptr<Transition>> output_transitions;
-	InitialValue initial_input_a;
-	InitialValue initial_input_b;
-	InitialValue initial_output;
+	InitialValue initial_value_input_a;
+	InitialValue initial_value_input_b;
+	InitialValue initial_value_output;
 	std::vector<std::shared_ptr<NORGateInput>> subscribers;
 	double transfer_functions;  // TODO: use right datatype
 
    public:
+	NORGate(){};
 	NORGate(const std::string& gate_name,
 	        const std::string& output_node_name,
 	        double transfer_functions) : gate_name{gate_name},
 	                                     output_node_name{output_node_name},
-	                                     initial_input_a{UNDEFINED},
-	                                     initial_input_b{UNDEFINED},
-	                                     initial_output{VDD},
+	                                     initial_value_input_a{UNDEFINED},
+	                                     initial_value_input_b{UNDEFINED},
+	                                     initial_value_output{VDD},
 	                                     subscribers{},
 	                                     transfer_functions{transfer_functions} {};
 	~NORGate();
@@ -57,7 +65,7 @@ class NORGate {
 	InitialValue GetInitialOutput();
 	InitialValue GetInitialInput(Input input);
 	void SetInitialInput(InitialValue initial_value, Input input);
-	std::vector<std::shared_ptr<NORGateInput>>& GetSubscribers();
+	std::vector<std::shared_ptr<NORGateInput>>& GetSubscribers() override;
 	std::string GetOutputNodeName();
 	std::vector<std::shared_ptr<Transition>>& GetOutputTransitions();
 	void AddSubscriber(std::shared_ptr<NORGateInput> subscriber);

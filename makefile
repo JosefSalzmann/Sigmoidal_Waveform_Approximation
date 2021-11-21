@@ -1,5 +1,6 @@
 CXX = g++
 CXXFLAGS = -Wall -g
+LDFLAGS = 
 
 SRC_DIR = ./src
 OBJ_DIR = ./obj
@@ -10,6 +11,7 @@ OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/nor_gate.o \
 		$(OBJ_DIR)/transition_schedule.o \
 		$(OBJ_DIR)/circuit_simulator.o \
+		$(OBJ_DIR)/circuit_input.o \
 		$(OBJ_DIR)/polynomial_tranfer_function.o
 
 $(MAIN): $(OBJS)

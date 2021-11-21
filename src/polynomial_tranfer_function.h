@@ -12,8 +12,8 @@ class PolynomialTranferFunction : public TranferFunction {
    public:
 	PolynomialTranferFunction();
 	~PolynomialTranferFunction();
-	void ReadModel(std::string file_path);
-	TransitionParameters CalculatePropagation(TransitionParameters input_parameters);
+	void ReadModel(const std::string& file_path) override;
+	TransitionParameters CalculatePropagation(TransitionParameters input_parameters) override;
 };
 
 #endif

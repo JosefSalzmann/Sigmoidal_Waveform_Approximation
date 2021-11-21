@@ -7,13 +7,13 @@
 #include "circuit_file_parser.h"
 
 void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
-	parser = CircuitFileParser();
 	parser.ParseFile(file_path);
 	bool valid_file = parser.PerformSanityCheck();
 	if (!valid_file) {
 		return;  // TODO: report back that file is not valid
 	}
 	InitializeNORGates();
+	GetInputInitialValues();
 }
 
 void CircuitSimulator::InitializeNORGates() {
@@ -24,32 +24,33 @@ void CircuitSimulator::InitializeNORGates() {
 	}
 }
 
+/*
+ * Get the initial values of all inputs.
+ */
 void CircuitSimulator::GetInputInitialValues() {
 	std::vector<ParsedInput> parsed_inputs = parser.GetInputs();
 	for (auto it = parsed_inputs.begin(); it != parsed_inputs.end(); it++) {
+		CircuitInput input = CircuitInput((*it).file_name, (*it).node_name);
+		input.DetermineInitialValue();
+		circuit_inputs.push_back(input);
 	}
 }
 
-InitialValue CircuitSimulator::GetInputFileInitialValue(std::string file_name) {
-	std::ifstream input_file_stream(file_name);
-	std::string line = "";
-	getline(input_file_stream, line);
-	if (line.compare("") == 0) {
-		return GND;
-	} else {
-		// TODO: add check if ',' is present
-		int steepness_param_end = line.find(',');
-		std::string steepness_param_str = line.substr(0, steepness_param_end);
-		double steepness_param = atof(steepness_param_str.c_str());
+void CircuitSimulator::DetermineGatesInitialValues() {
+	bool gate_initialized[nor_gates.size()];
+	for (int i = 0; i < (int)nor_gates.size(); i++)
+		gate_initialized[i] = false;
 
-		if (steepness_param < 0) {
-			// falling transition => initial values is VDD
-			return VDD;
-		} else {
-			// rising transition => initial values is GND
-			return GND;
+	bool all_gates_initialized = false;
+	while (!all_gates_initialized) {
+		int i = 0;
+		for (auto it = nor_gates.begin(); it != nor_gates.end(); it++) {
+			if (!gate_initialized[i]) {
+			}
+			i++;
 		}
 	}
 }
+
 CircuitSimulator::~CircuitSimulator() {
 }

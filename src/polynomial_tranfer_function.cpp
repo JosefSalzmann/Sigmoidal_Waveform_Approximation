@@ -6,7 +6,7 @@
 PolynomialTranferFunction::PolynomialTranferFunction(/* args */) {
 }
 
-void PolynomialTranferFunction::ReadModel(std::string file_path) {}
+void PolynomialTranferFunction::ReadModel(const std::string& file_path) {}
 
 TransitionParameters PolynomialTranferFunction::CalculatePropagation(TransitionParameters input_parameters) {
 	return TransitionParameters{};

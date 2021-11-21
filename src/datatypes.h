@@ -46,8 +46,7 @@ struct Transition {
 class TranferFunction {
    public:
 	virtual ~TranferFunction() {}
-	virtual void ReadModel(std::string file_path) = 0;
+	virtual void ReadModel(const std::string& file_path) = 0;
 	virtual TransitionParameters CalculatePropagation(TransitionParameters input_parameters) = 0;
 };
-
 #endif
