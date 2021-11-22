@@ -4,22 +4,23 @@
 #ifndef CIRCUIT_SIMULATOR_H
 #define CIRCUIT_SIMULATOR_H
 
-#include <string>
-
 #include "circuit_file_parser.h"
 #include "circuit_input.h"
 #include "nor_gate.h"
 
 class CircuitSimulator {
    private:
-	std::vector<NORGate> nor_gates;
-	std::vector<CircuitInput> circuit_inputs;
+	std::vector<std::shared_ptr<NORGate>> nor_gates;
+	std::vector<std::shared_ptr<CircuitInput>> circuit_inputs;
 	CircuitFileParser parser;
 
 	void InitializeNORGates();
-	void GetInputInitialValues();
-	InitialValue GetInputFileInitialValue(const std::string& file_name);
+	void InitializeInputs();
 	void DetermineGatesInitialValues();
+	static bool ParsedNORGateSorter(const ParsedGate& lhs, const ParsedGate& rhs);
+	static bool ParsedInputSorter(const ParsedInput& lhs, const ParsedInput& rhs);
+	int GetNORGateIndexFromOutputName(const std::string& name);
+	int GetCircuitInputIndexFromOutputName(const std::string& name);
 
    public:
 	CircuitSimulator() : nor_gates{}, circuit_inputs{}, parser{CircuitFileParser()} {};

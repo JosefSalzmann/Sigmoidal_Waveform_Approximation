@@ -4,7 +4,6 @@
 #ifndef CIRCUIT_FILE_PARSER_H
 #define CIRCUIT_FILE_PARSER_H
 
-#include <string>
 #include <vector>
 
 #include "datatypes.h"

@@ -5,6 +5,6 @@
 
 int main() {
 	CircuitSimulator simulator = CircuitSimulator();
-	simulator.InitializeCircuit("../testing/gate_parsing_test.txt");
+	simulator.InitializeCircuit("../testing/intial_ values_test.txt");
 	return 0;
 }

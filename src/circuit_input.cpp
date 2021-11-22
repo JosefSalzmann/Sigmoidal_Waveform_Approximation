@@ -3,8 +3,16 @@
 
 #include <fstream>
 
-std::vector<std::shared_ptr<NORGateInput>>& CircuitInput::GetSubscribers() {
+std::vector<NORGateInput>& CircuitInput::GetSubscribers() {
 	return subscribers;
+}
+
+std::string CircuitInput::GetOutputName() {
+	return node_name;
+}
+
+void CircuitInput::AddSubscriber(NORGateInput subscriber) {
+	subscribers.push_back(subscriber);
 }
 
 /*
@@ -31,6 +39,10 @@ void CircuitInput::DetermineInitialValue() {
 			initial_value = GND;
 		}
 	}
+}
+
+InitialValue CircuitInput::GetInitialOutputValue() {
+	return initial_value;
 }
 
 CircuitInput::~CircuitInput() {

@@ -1,0 +1,9 @@
+* test gate parsing
+INPUTS
+IN1 ../testing/in1.txt
+GATES
+X1 OUT1 OUT3 OUT3
+X2 OUT2 OUT1 OUT1
+X2 OUT3 OUT2 OUT2
+OUTPUTS
+OUT5

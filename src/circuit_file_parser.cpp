@@ -77,29 +77,30 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
  * Check that each circuit node has exactly one source and atleast one sink.
  * Nodes with more than one source cause abortion.
  * TODO: Maybe cause abortion when a sink has no source?
+ * TODO: Check if all gate and input names are different
 */
 bool CircuitFileParser::PerformSanityCheck() {
 	std::multiset<std::string> source_names, sink_names;
 
 	for (auto it = inputs.begin(); it != inputs.end(); it++) {
-		source_names.insert((*it).node_name);
+		source_names.insert(it->node_name);
 	}
 
 	for (auto it = gates.begin(); it != gates.end(); it++) {
-		// std::cout << (*it).ouput_name << std::endl;
-		source_names.insert((*it).ouput_name);
-		std::string input_a_name = (*it).input_a_name;
+		// std::cout << it->ouput_name << std::endl;
+		source_names.insert(it->ouput_name);
+		std::string input_a_name = it->input_a_name;
 		if (input_a_name.compare("GND") != 0 &&
 		    input_a_name.compare("VDD") != 0)
-			sink_names.insert((*it).input_a_name);
-		std::string input_b_name = (*it).input_b_name;
+			sink_names.insert(it->input_a_name);
+		std::string input_b_name = it->input_b_name;
 		if (input_b_name.compare("GND") != 0 &&
 		    input_b_name.compare("VDD") != 0)
-			sink_names.insert((*it).input_b_name);
+			sink_names.insert(it->input_b_name);
 	}
 
 	for (auto it = outputs.begin(); it != outputs.end(); it++) {
-		sink_names.insert((*it).node_name);
+		sink_names.insert(it->node_name);
 	}
 
 	// look for duplicates in the sink multi set

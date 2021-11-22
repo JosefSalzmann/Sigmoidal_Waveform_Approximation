@@ -13,14 +13,17 @@ class CircuitInput : public TransitionSource {
    private:
 	std::string file_name;
 	std::string node_name;
-	std::vector<std::shared_ptr<NORGateInput>> subscribers;
+	std::vector<NORGateInput> subscribers;
 	InitialValue initial_value = UNDEFINED;
 
    public:
 	CircuitInput(const std::string& file_name,
 	             const std::string& node_name) : file_name{file_name},
 	                                             node_name{node_name} {};
-	std::vector<std::shared_ptr<NORGateInput>>& GetSubscribers() override;
+	std::vector<NORGateInput>& GetSubscribers() override;
+	InitialValue GetInitialOutputValue() override;
+	std::string GetOutputName() override;
+	void AddSubscriber(NORGateInput subscriber);
 	void DetermineInitialValue();
 	~CircuitInput();
 };
