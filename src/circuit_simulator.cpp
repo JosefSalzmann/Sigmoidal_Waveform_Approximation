@@ -2,9 +2,13 @@
 
 #include "circuit_simulator.h"
 
+#include <assert.h>
+#include <cryptominisat5/cryptominisat.h>
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "circuit_file_parser.h"
 #include "nor_gate.h"
@@ -136,6 +140,7 @@ int CircuitSimulator::GetCircuitInputIndexFromOutputName(const std::string& name
  * 			...	=	...
  */
 void CircuitSimulator::DetermineGatesInitialValues() {
+	CMSat::SATSolver solver;
 	std::vector<std::vector<int>> clauses;
 	std::vector<int> true_constant = {1};
 	clauses.push_back(true_constant);

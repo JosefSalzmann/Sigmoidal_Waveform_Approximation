@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -Wall -g
-LDFLAGS = 
+LIBS = -L. -lcryptominisat5
 
 SRC_DIR = ./src
 OBJ_DIR = ./obj
@@ -17,7 +17,7 @@ OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/vdd_potential.o
 
 $(MAIN): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(LIBS)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
