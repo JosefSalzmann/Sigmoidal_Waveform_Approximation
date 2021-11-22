@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 
 #include "circuit_file_parser.h"
 #include "nor_gate.h"
@@ -178,7 +179,18 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 		clauses.push_back(second_subclause);
 		clauses.push_back(third_subclause);
 	}
-	int a = 0;
+
+	std::ofstream out_fs("initial_values_determination.dimacs");
+	out_fs << "p cnf " << std::to_string(nor_gates.size() + 1) << " " << std::to_string(3 * nor_gates.size() + 1) << "\n";
+	for (auto clause = clauses.begin(); clause != clauses.end(); clause++) {
+		for (auto literal = clause->begin(); literal != clause->end(); literal++) {
+			out_fs << std::to_string(*literal) << " ";
+		}
+		out_fs << " 0\n";
+	}
+	out_fs.close();
+	// check using minisat and throw away stdout and stderr
+	system("minisat initial_values_determination.dimacs initial_values_determination.output > /dev/null 2>&1");
 }
 
 bool CircuitSimulator::ParsedNORGateSorter(const ParsedGate& lhs, const ParsedGate& rhs) {
