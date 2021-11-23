@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "circuit_file_parser.cpp"
+#include "../circuit_file_parser.cpp"
 
 TEST(ParserTest, SanitiyCheck) {
 	CircuitFileParser Parser1 = CircuitFileParser();
