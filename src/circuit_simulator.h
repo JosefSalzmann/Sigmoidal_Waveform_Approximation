@@ -21,6 +21,7 @@ class CircuitSimulator {
 	static bool ParsedInputSorter(const ParsedInput& lhs, const ParsedInput& rhs);
 	int GetNORGateIndexFromOutputName(const std::string& name);
 	int GetCircuitInputIndexFromOutputName(const std::string& name);
+	void SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> nor_gate, InitialValue initial_value);
 
    public:
 	CircuitSimulator() : nor_gates{}, circuit_inputs{}, parser{CircuitFileParser()} {};

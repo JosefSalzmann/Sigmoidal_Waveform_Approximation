@@ -141,61 +141,112 @@ int CircuitSimulator::GetCircuitInputIndexFromOutputName(const std::string& name
  */
 void CircuitSimulator::DetermineGatesInitialValues() {
 	CMSat::SATSolver solver;
-	std::vector<std::vector<int>> clauses;
-	std::vector<int> true_constant = {1};
-	clauses.push_back(true_constant);
+	solver.set_num_threads(1);
+	solver.new_vars(1 + nor_gates.size());
+	std::vector<CMSat::Lit> clause;
+
+	// add a constant for true and false
+	clause.push_back(CMSat::Lit(0, false));
+	solver.add_clause(clause);
 
 	for (auto it = nor_gates.begin(); it != nor_gates.end(); it++) {
 		InitialValue input_a_initial = (*it)->GetInputSource(Input_A)->GetInitialOutputValue();
 		InitialValue input_b_initial = (*it)->GetInputSource(Input_B)->GetInitialOutputValue();
 
-		int input_a_var_index, input_b_var_index;
-
+		CMSat::Lit input_a_lit, input_a_lit_neg, input_b_lit, input_b_lit_neg;
 		if (input_a_initial == UNDEFINED) {
 			// input a is neither constant GDD/VDD nor connected to an input
 			std::string input_a_node_name = (*it)->GetInputSource(Input_A)->GetOutputName();
 			int input_a_nor_gate_index = GetNORGateIndexFromOutputName(input_a_node_name);
-			input_a_var_index = 2 + input_a_nor_gate_index;
+			input_a_lit = CMSat::Lit(1 + input_a_nor_gate_index, false);
+			input_a_lit_neg = CMSat::Lit(1 + input_a_nor_gate_index, true);
 		} else if (input_a_initial == VDD) {
-			input_a_var_index = 1;
+			input_a_lit = CMSat::Lit(0, true);
+			input_a_lit_neg = CMSat::Lit(0, false);
+			(*it)->SetInitialInput(VDD, Input_A);
 		} else {
-			input_a_var_index = -1;
+			input_a_lit = CMSat::Lit(0, false);
+			input_a_lit_neg = CMSat::Lit(0, true);
+			(*it)->SetInitialInput(GND, Input_A);
 		}
 
 		if (input_b_initial == UNDEFINED) {
 			// input a is neither constant GDD/VDD nor connected to an input
 			std::string input_b_node_name = (*it)->GetInputSource(Input_B)->GetOutputName();
 			int input_b_nor_gate_index = GetNORGateIndexFromOutputName(input_b_node_name);
-			input_b_var_index = 2 + input_b_nor_gate_index;
+			input_b_lit = CMSat::Lit(1 + input_b_nor_gate_index, false);
+			input_b_lit_neg = CMSat::Lit(1 + input_b_nor_gate_index, true);
 		} else if (input_b_initial == VDD) {
-			input_b_var_index = 1;
+			input_b_lit = CMSat::Lit(0, true);
+			input_b_lit_neg = CMSat::Lit(0, false);
+			(*it)->SetInitialInput(VDD, Input_B);
 		} else {
-			input_b_var_index = -1;
+			input_b_lit = CMSat::Lit(0, false);
+			input_b_lit_neg = CMSat::Lit(0, true);
+			(*it)->SetInitialInput(GND, Input_B);
 		}
 
 		int output_gate_index = GetNORGateIndexFromOutputName((*it)->GetOutputName());
-		int output_var_index = 2 + output_gate_index;
+		CMSat::Lit output_lit = CMSat::Lit(1 + output_gate_index, false);
+		CMSat::Lit output_lit_neg = CMSat::Lit(1 + output_gate_index, true);
 
-		std::vector<int> first_subclause = {input_a_var_index, input_b_var_index, output_var_index};
-		std::vector<int> second_subclause = {-input_a_var_index, -output_var_index};
-		std::vector<int> third_subclause = {-input_b_var_index, -output_var_index};
+		/* for every NOR gate add the input output relation to the clause set:
+		 *  		(InputA NOR InputB) XNOR Output
+		 * which converted to cnf is equal to:
+		 * 			(InputA OR InputB OR Output) AND
+		 *			(!InputA OR !Output) AND
+		 *			(!InputB OR !Output) AND
+		 */
+		std::vector<CMSat::Lit> first_clause;
+		first_clause.push_back(input_a_lit);
+		first_clause.push_back(input_b_lit);
+		first_clause.push_back(output_lit);
 
-		clauses.push_back(first_subclause);
-		clauses.push_back(second_subclause);
-		clauses.push_back(third_subclause);
+		std::vector<CMSat::Lit> second_clause;
+		second_clause.push_back(input_a_lit_neg);
+		second_clause.push_back(output_lit_neg);
+
+		std::vector<CMSat::Lit> third_clause;
+		third_clause.push_back(input_b_lit_neg);
+		third_clause.push_back(output_lit_neg);
+
+		solver.add_clause(first_clause);
+		solver.add_clause(second_clause);
+		solver.add_clause(third_clause);
 	}
 
-	std::ofstream out_fs("initial_values_determination.dimacs");
-	out_fs << "p cnf " << std::to_string(nor_gates.size() + 1) << " " << std::to_string(3 * nor_gates.size() + 1) << "\n";
-	for (auto clause = clauses.begin(); clause != clauses.end(); clause++) {
-		for (auto literal = clause->begin(); literal != clause->end(); literal++) {
-			out_fs << std::to_string(*literal) << " ";
+	bool solvable = solver.solve() == CMSat::l_True;
+	if (!solvable) {
+		// TODO: report that no initial assignment can be found
+		std::cout << "Circuit initial values cannot be computed\n";
+		return;
+	}
+
+	// recover the initial output values from the sat-solver model and apply them
+	int model_index = 1;
+	for (auto it = nor_gates.begin(); it != nor_gates.end(); it++) {
+		bool output_value = solver.get_model()[model_index] == CMSat::l_True;
+		InitialValue output_init_value;
+		if (output_value) {
+			output_init_value = VDD;
+		} else {
+			output_init_value = GND;
 		}
-		out_fs << " 0\n";
+
+		SetNORGateSubscirbersInputValue((*it), output_init_value);
+		model_index++;
 	}
-	out_fs.close();
-	// check using minisat and throw away stdout and stderr
-	system("minisat initial_values_determination.dimacs initial_values_determination.output > /dev/null 2>&1");
+}
+
+/*
+ * Set the initial input values of the gates subscribers, 
+ * by setting the initial values of the inputs the initial output value is derived automatically.
+ */
+void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> nor_gate, InitialValue initial_value) {
+	auto subscribers = nor_gate->GetSubscribers();
+	for (auto subscriber = subscribers.begin(); subscriber != subscribers.end(); subscriber++) {
+		subscriber->nor_gate->SetInitialInput(initial_value, subscriber->input);
+	}
 }
 
 bool CircuitSimulator::ParsedNORGateSorter(const ParsedGate& lhs, const ParsedGate& rhs) {
