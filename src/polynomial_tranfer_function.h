@@ -4,7 +4,7 @@
 #ifndef POLYNOMIAL_TRANSFER_FUNCTION_H
 #define POLYNOMIAL_TRANSFER_FUNCTION_H
 
-#include "datatypes.h"
+#include "nor_gate.h"
 
 class PolynomialTranferFunction : public TranferFunction {
    private:

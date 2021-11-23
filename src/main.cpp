@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "circuit_simulator.h"
-#include "datatypes.h"
 
 int main() {
 	CircuitSimulator simulator = CircuitSimulator();

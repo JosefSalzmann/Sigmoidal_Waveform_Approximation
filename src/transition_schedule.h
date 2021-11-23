@@ -4,8 +4,9 @@
 #ifndef TRANSITION_SCHEDULE_H
 #define TRANSITION_SCHEDULE_H
 #include <memory>
+#include <vector>
 
-#include "datatypes.h"
+#include "nor_gate.h"
 
 class TransitionSchedule {
    private:

@@ -1,8 +1,6 @@
 
 #include "polynomial_tranfer_function.h"
 
-#include "datatypes.h"
-
 PolynomialTranferFunction::PolynomialTranferFunction(/* args */) {
 }
 

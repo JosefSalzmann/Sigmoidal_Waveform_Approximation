@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "datatypes.h"
 #include "nor_gate.h"
 
 class CircuitInput : public TransitionSource {

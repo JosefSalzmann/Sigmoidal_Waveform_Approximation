@@ -6,8 +6,24 @@
 
 #include <vector>
 
-#include "datatypes.h"
 #include "nor_gate.h"
+
+struct ParsedInput {
+	std::string node_name;
+	std::string file_name;
+};
+
+struct ParsedGate {
+	std::string gate_name;
+	std::string ouput_name;
+	std::string input_a_name;
+	std::string input_b_name;
+	// std::string gate_type;
+};
+
+struct ParsedOutput {
+	std::string node_name;
+};
 
 class CircuitFileParser {
    private:

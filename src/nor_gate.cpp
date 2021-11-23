@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "datatypes.h"
-
 void NORGate::SetInputSource(const std::shared_ptr<TransitionSource>& input_source, Input input) {
 	if (input == Input_A) {
 		input_a_source = input_source;

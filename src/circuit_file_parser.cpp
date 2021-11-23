@@ -10,7 +10,7 @@
 #include <set>
 #include <string>
 
-#include "datatypes.h"
+#include "nor_gate.h"
 
 int CircuitFileParser::ParseFile(const std::string& file_name) {
 	int current_section = -1;  // 0 = input, 1 = gates, 2 = outputs

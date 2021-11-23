@@ -6,8 +6,7 @@
 
 #include <memory>
 #include <string>
-
-#include "datatypes.h"
+#include <vector>
 
 struct NORGateInput;
 struct Transition;
@@ -36,6 +35,27 @@ class TransitionSource {
 	virtual std::string GetOutputName() = 0;
 	virtual InitialValue GetInitialOutputValue() = 0;
 	virtual std::vector<NORGateInput>& GetSubscribers() = 0;
+};
+
+struct TransitionParameters {
+	double shift;
+	double steepness;
+};
+
+struct Transition {
+	std::shared_ptr<TransitionSource> source;
+	std::vector<NORGateInput> sinks;
+	TransitionParameters parameters;
+	std::unique_ptr<Transition> parent;  // TODO: maybe shared_ptr needs to be used?
+	std::vector<std::unique_ptr<Transition>> children;
+	bool cancelation;
+};
+
+class TranferFunction {
+   public:
+	virtual ~TranferFunction() {}
+	virtual void ReadModel(const std::string& file_path) = 0;
+	virtual TransitionParameters CalculatePropagation(TransitionParameters input_parameters) = 0;
 };
 
 #include "gnd_potential.h"
