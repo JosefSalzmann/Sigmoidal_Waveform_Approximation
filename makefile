@@ -22,7 +22,7 @@ $(MAIN): $(OBJS)
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all: $(MAIN)
+all: $(MAIN) all-tests
 
 clean:
 	rm $(OBJ_DIR)/*.o $(MAIN) runTests
@@ -30,7 +30,9 @@ clean:
 check:
 	cppcheck $(SRC_DIR)/* --language=c++ --enable=all --suppress=missingIncludeSystem
 
-tests:
+all-tests:
 	cmake $(TEST_DIR)/CMakeLists.txt
 	(cd $(TEST_DIR) && make)
 	mv $(TEST_DIR)/runTests .
+tests:
+	./runTests

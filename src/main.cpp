@@ -5,7 +5,6 @@
 
 int main() {
 	CircuitSimulator simulator = CircuitSimulator();
-	simulator.InitializeCircuit("../testing/intial_values_test.txt");
-	// system("touch test.asdf");
+	simulator.InitializeCircuit("../testing/test_data/intial_values_test.txt");
 	return 0;
 }
