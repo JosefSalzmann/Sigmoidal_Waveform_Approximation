@@ -42,7 +42,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 					if (LineIsParseableInput(line_no_front_space)) {
 						inputs.push_back(GetParsedInput(line));
 					} else {
-						std::cout << "Cannot parse: " << line << std::endl;
+						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
 						break;
 					}
@@ -50,7 +50,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 					if (LineIsParseableGate(line_no_front_space)) {
 						gates.push_back(GetParsedGate(line));
 					} else {
-						std::cout << "Cannot parse: " << line << std::endl;
+						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
 						break;
 					}
@@ -58,7 +58,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 					if (LineIsParseableOutput(line_no_front_space)) {
 						outputs.push_back(GetParsedOutput(line));
 					} else {
-						std::cout << "Cannot parse: " << line << std::endl;
+						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
 						break;
 					}
@@ -87,7 +87,6 @@ bool CircuitFileParser::PerformSanityCheck() {
 	}
 
 	for (auto it = gates.begin(); it != gates.end(); it++) {
-		// std::cout << it->ouput_name << std::endl;
 		source_names.insert(it->ouput_name);
 		std::string input_a_name = it->input_a_name;
 		if (input_a_name.compare("GND") != 0 &&
@@ -106,7 +105,7 @@ bool CircuitFileParser::PerformSanityCheck() {
 	// look for duplicates in the sink multi set
 	auto duplicate = std::adjacent_find(source_names.begin(), source_names.end());
 	if (duplicate != source_names.end()) {
-		std::cout << "Error, circuit node " << *duplicate << " has multiple sources." << std::endl;
+		std::cerr << "Circuit node " << *duplicate << " has multiple sources." << std::endl;
 		return false;
 	}
 
@@ -114,7 +113,7 @@ bool CircuitFileParser::PerformSanityCheck() {
 	// for (auto it = sink_names.begin(); it != sink_names.end(); it++) {
 	// 	auto source = source_names.find(*it);
 	// 	if (source == source_names.end()) {
-	// 		std::cout << "Error, circuit node " << *it << " is not connected." << std::endl;
+	// 		std::cerr << "Error, circuit node " << *it << " is not connected." << std::endl;
 	// 	}
 	// 	return false;
 	// }

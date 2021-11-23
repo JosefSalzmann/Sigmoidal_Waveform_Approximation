@@ -10,16 +10,18 @@
 
 class TransitionSchedule {
    private:
-	std::vector<Transition> future_transitions;
-	std::vector<Transition> past_transitions;
+	std::vector<std::shared_ptr<Transition>> future_transitions;
+	std::vector<std::shared_ptr<Transition>> past_transitions;
 
    public:
 	TransitionSchedule();
 	~TransitionSchedule();
-	void AddFutureTransition(Transition transition);
-	void AddPastTransition(Transition transition);
+	void AddFutureTransition(std::shared_ptr<Transition> transition);
+	void AddPastTransition(std::shared_ptr<Transition> transition);
+	void SortFutureTransitions();
 	std::shared_ptr<Transition> ConsumeFirstTransition();
 	bool HasFutureTransitions();
 	void CancelTransition(std::shared_ptr<Transition> first_cancelation_partner, std::shared_ptr<Transition> second_cancelation_partner);
+	static bool TransitionSorter(const std::shared_ptr<Transition>& lhs, const std::shared_ptr<Transition>& rhs);
 };
 #endif

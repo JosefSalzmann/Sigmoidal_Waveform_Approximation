@@ -1,7 +1,10 @@
 
 #include "circuit_input.h"
 
+#include <cerrno>
 #include <fstream>
+#include <iostream>
+#include <string>
 
 std::vector<NORGateInput>& CircuitInput::GetSubscribers() {
 	return subscribers;
@@ -26,18 +29,63 @@ void CircuitInput::DetermineInitialValue() {
 		// assume GND as initial value if first line is empty (file will be treated as empty)
 		initial_value = GND;
 	} else {
-		// TODO: add check if ',' is present and string input other checks :P !
-		int steepness_param_end = line.find(',');
-		std::string steepness_param_str = line.substr(0, steepness_param_end);
-		double steepness_param = atof(steepness_param_str.c_str());
+		TransitionParameters first_transition = ParseInputFileLine(line);
 
-		if (steepness_param < 0) {
-			// falling transition => initial values is VDD
-			initial_value = VDD;
-		} else {
+		if (first_transition.steepness > 0) {
 			// rising transition => initial values is GND
 			initial_value = GND;
+		} else {
+			// falling transition => initial values is VDD
+			initial_value = VDD;
 		}
+	}
+}
+
+TransitionParameters CircuitInput::ParseInputFileLine(const std::string& line) {
+	// check if ',' is present
+	auto steepness_param_end = line.find(',');
+	if (steepness_param_end == std::string::npos) {
+		std::cerr << "invalid line in " << file_name << ": " << line << std::endl;
+		throw std::exception();
+	}
+
+	std::string steepness_param_str = line.substr(0, steepness_param_end);
+	char* endptr;
+	errno = 0;
+	double steepness_param = std::strtod(steepness_param_str.c_str(), &endptr);
+	if (*endptr != '\0' ||  // error, we didn't consume the entire string
+	    errno != 0)         // error, overflow or underflow
+	{
+		std::cerr << "conversion error in " << file_name << ": " << line << std::endl;
+	}
+
+	std::string shift_param_str = line.substr(steepness_param_end + 1, line.size() - steepness_param_end - 1);
+	double shift_param = std::strtod(shift_param_str.c_str(), &endptr);
+	if (*endptr != '\0' ||  // error, we didn't consume the entire string
+	    errno != 0)         // error, overflow or underflow
+	{
+		std::cerr << "conversion error in " << file_name << ": " << line << std::endl;
+	}
+
+	return {steepness_param, shift_param};
+}
+
+void CircuitInput::ReadTransitionsFromInputFile() {
+	std::ifstream input_file_stream(file_name);
+	std::string line = "";
+	while (getline(input_file_stream, line)) {
+		if (line.compare("") == 0) {
+			return;
+		}
+		TransitionParameters parameters = ParseInputFileLine(line);
+		std::shared_ptr<Transition> transition(new Transition);
+		transition->source = std::shared_ptr<TransitionSource>(this);
+		transition->sinks = subscribers;
+		transition->parameters = parameters;
+		transition->parent = nullptr;
+		transition->children = {};
+		transition->cancelation = false;
+		transitions.push_back(transition);
 	}
 }
 

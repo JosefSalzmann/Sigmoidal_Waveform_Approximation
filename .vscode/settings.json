@@ -48,6 +48,7 @@
         "ctime": "cpp",
         "map": "cpp",
         "iomanip": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "cstring": "cpp"
     }
 }

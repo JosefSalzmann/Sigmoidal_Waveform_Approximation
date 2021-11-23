@@ -46,8 +46,8 @@ struct Transition {
 	std::shared_ptr<TransitionSource> source;
 	std::vector<NORGateInput> sinks;
 	TransitionParameters parameters;
-	std::unique_ptr<Transition> parent;  // TODO: maybe shared_ptr needs to be used?
-	std::vector<std::unique_ptr<Transition>> children;
+	std::shared_ptr<Transition> parent;
+	std::vector<std::shared_ptr<Transition>> children;
 	bool cancelation;
 };
 

@@ -14,16 +14,20 @@ class CircuitInput : public TransitionSource {
 	std::string node_name;
 	std::vector<NORGateInput> subscribers;
 	InitialValue initial_value = UNDEFINED;
+	std::vector<std::shared_ptr<Transition>> transitions;
+	TransitionParameters ParseInputFileLine(const std::string& line);
 
    public:
 	CircuitInput(const std::string& file_name,
 	             const std::string& node_name) : file_name{file_name},
-	                                             node_name{node_name} {};
+	                                             node_name{node_name},
+	                                             transitions{} {};
 	std::vector<NORGateInput>& GetSubscribers() override;
 	InitialValue GetInitialOutputValue() override;
 	std::string GetOutputName() override;
 	void AddSubscriber(NORGateInput subscriber);
 	void DetermineInitialValue();
+	void ReadTransitionsFromInputFile();
 	~CircuitInput();
 };
 #endif

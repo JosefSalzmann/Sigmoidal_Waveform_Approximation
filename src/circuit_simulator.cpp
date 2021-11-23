@@ -1,5 +1,4 @@
 
-
 #include "circuit_simulator.h"
 
 #include <assert.h>
@@ -22,6 +21,11 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	InitializeInputs();
 	InitializeNORGates();
 	DetermineGatesInitialValues();
+
+	// read in all input transitions
+	for (auto input = circuit_inputs.begin(); input != circuit_inputs.end(); input++) {
+		(*input)->ReadTransitionsFromInputFile();
+	}
 }
 
 /*
@@ -37,6 +41,10 @@ void CircuitSimulator::InitializeInputs() {
 	}
 }
 
+/*
+ * Set the  input sources and the subscribers for all NOR Gates and the
+ * subscribers of the inputs. 
+ */
 void CircuitSimulator::InitializeNORGates() {
 	std::vector<ParsedGate> parsed_nor_gates = parser.GetGates();
 	std::sort(parsed_nor_gates.begin(), parsed_nor_gates.end(), &ParsedNORGateSorter);
@@ -218,7 +226,7 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 	bool solvable = solver.solve() == CMSat::l_True;
 	if (!solvable) {
 		// TODO: report that no initial assignment can be found
-		std::cout << "Circuit initial values cannot be computed\n";
+		std::cerr << "Circuit initial values cannot be computed" << std::endl;
 		return;
 	}
 
