@@ -18,11 +18,19 @@ void CircuitInput::AddSubscriber(NORGateInput subscriber) {
 	subscribers.push_back(subscriber);
 }
 
+std::vector<std::shared_ptr<Transition>>& CircuitInput::GetTransitions() {
+	return transitions;
+}
+
 /*
  * Get the initial value of an input by looking at the first transition.
  */
 void CircuitInput::DetermineInitialValue() {
 	std::ifstream input_file_stream(file_name);
+	if (input_file_stream.fail()) {
+		std::cerr << "File not found: " << file_name << std::endl;
+		throw std::exception();
+	}
 	std::string line = "";
 	getline(input_file_stream, line);
 	if (line.compare("") == 0) {
@@ -57,6 +65,7 @@ TransitionParameters CircuitInput::ParseInputFileLine(const std::string& line) {
 	    errno != 0)         // error, overflow or underflow
 	{
 		std::cerr << "conversion error in " << file_name << ": " << line << std::endl;
+		throw std::exception();
 	}
 
 	std::string shift_param_str = line.substr(steepness_param_end + 1, line.size() - steepness_param_end - 1);
@@ -65,6 +74,7 @@ TransitionParameters CircuitInput::ParseInputFileLine(const std::string& line) {
 	    errno != 0)         // error, overflow or underflow
 	{
 		std::cerr << "conversion error in " << file_name << ": " << line << std::endl;
+		throw std::exception();
 	}
 
 	return {steepness_param, shift_param};
@@ -72,6 +82,10 @@ TransitionParameters CircuitInput::ParseInputFileLine(const std::string& line) {
 
 void CircuitInput::ReadTransitionsFromInputFile() {
 	std::ifstream input_file_stream(file_name);
+	if (input_file_stream.fail()) {
+		std::cerr << "File not found: " << file_name << std::endl;
+		throw std::exception();
+	}
 	std::string line = "";
 	while (getline(input_file_stream, line)) {
 		if (line.compare("") == 0) {

@@ -4,6 +4,11 @@
 
 int main() {
 	CircuitSimulator simulator = CircuitSimulator();
-	simulator.InitializeCircuit("../testing/test_data/intial_values_test.txt");
+	try {
+		simulator.InitializeCircuit("../testing/test_data/intial_values_test.txt");
+	} catch (const std::exception& e) {
+		return -1;
+	}
+
 	return 0;
 }

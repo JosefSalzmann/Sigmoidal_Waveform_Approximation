@@ -35,4 +35,4 @@ all-tests:
 	(cd $(TEST_DIR) && make)
 	mv $(TEST_DIR)/runTests .
 tests:
-	./runTests
+	./runTests 2>/dev/null

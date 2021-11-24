@@ -27,12 +27,12 @@ struct ParsedOutput {
 
 class CircuitFileParser {
    private:
-	std::vector<ParsedInput> inputs;
-	std::vector<ParsedGate> gates;
-	std::vector<ParsedOutput> outputs;
+	std::vector<ParsedInput> parsed_inputs;
+	std::vector<ParsedGate> parsed_gates;
+	std::vector<ParsedOutput> parsed_outputs;
 
    public:
-	CircuitFileParser() : inputs{}, gates{}, outputs{} {}
+	CircuitFileParser() : parsed_inputs{}, parsed_gates{}, parsed_outputs{} {}
 	~CircuitFileParser();
 	int ParseFile(const std::string& file_name);
 	bool PerformSanityCheck();

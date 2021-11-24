@@ -12,7 +12,7 @@ class PolynomialTranferFunction : public TranferFunction {
    public:
 	PolynomialTranferFunction();
 	~PolynomialTranferFunction();
-	void ReadModel(const std::string& file_path) override;
+	void ReadModel(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(TransitionParameters input_parameters) override;
 };
 

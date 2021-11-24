@@ -18,6 +18,10 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 	bool parsing_failed = false;
 
 	std::ifstream input_file_stream(file_name);
+	if (input_file_stream.fail()) {
+		std::cerr << "File not found: " << file_name << std::endl;
+		throw std::exception();
+	}
 	std::string line;
 	while (getline(input_file_stream, line)) {
 		int index_first_car = 0;
@@ -40,7 +44,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 			} else {
 				if (current_section == 0) {
 					if (LineIsParseableInput(line_no_front_space)) {
-						inputs.push_back(GetParsedInput(line));
+						parsed_inputs.push_back(GetParsedInput(line));
 					} else {
 						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
@@ -48,7 +52,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 					}
 				} else if (current_section == 1) {
 					if (LineIsParseableGate(line_no_front_space)) {
-						gates.push_back(GetParsedGate(line));
+						parsed_gates.push_back(GetParsedGate(line));
 					} else {
 						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
@@ -56,7 +60,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 					}
 				} else if (current_section == 2) {
 					if (LineIsParseableOutput(line_no_front_space)) {
-						outputs.push_back(GetParsedOutput(line));
+						parsed_outputs.push_back(GetParsedOutput(line));
 					} else {
 						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
@@ -68,7 +72,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 	}
 	input_file_stream.close();
 	if (parsing_failed) {
-		return -1;
+		throw std::exception();
 	}
 	return 0;
 }
@@ -82,11 +86,11 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 bool CircuitFileParser::PerformSanityCheck() {
 	std::multiset<std::string> source_names, sink_names;
 
-	for (auto it = inputs.begin(); it != inputs.end(); it++) {
+	for (auto it = parsed_inputs.begin(); it != parsed_inputs.end(); it++) {
 		source_names.insert(it->node_name);
 	}
 
-	for (auto it = gates.begin(); it != gates.end(); it++) {
+	for (auto it = parsed_gates.begin(); it != parsed_gates.end(); it++) {
 		source_names.insert(it->ouput_name);
 		std::string input_a_name = it->input_a_name;
 		if (input_a_name.compare("GND") != 0 &&
@@ -98,7 +102,7 @@ bool CircuitFileParser::PerformSanityCheck() {
 			sink_names.insert(it->input_b_name);
 	}
 
-	for (auto it = outputs.begin(); it != outputs.end(); it++) {
+	for (auto it = parsed_outputs.begin(); it != parsed_outputs.end(); it++) {
 		sink_names.insert(it->node_name);
 	}
 
@@ -106,7 +110,7 @@ bool CircuitFileParser::PerformSanityCheck() {
 	auto duplicate = std::adjacent_find(source_names.begin(), source_names.end());
 	if (duplicate != source_names.end()) {
 		std::cerr << "Circuit node " << *duplicate << " has multiple sources." << std::endl;
-		return false;
+		throw std::exception();
 	}
 
 	// look sinks that are not connected to a source
@@ -121,13 +125,13 @@ bool CircuitFileParser::PerformSanityCheck() {
 }
 
 std::vector<ParsedInput>& CircuitFileParser::GetInputs() {
-	return inputs;
+	return parsed_inputs;
 }
 std::vector<ParsedGate>& CircuitFileParser::GetGates() {
-	return gates;
+	return parsed_gates;
 }
 std::vector<ParsedOutput>& CircuitFileParser::GetOutputs() {
-	return outputs;
+	return parsed_outputs;
 }
 
 int CircuitFileParser::CountSpaces(const std::string& line) {

@@ -69,5 +69,9 @@ InitialValue NORGate::GetInitialOutputValue() {
 // 	return gate_name < str;
 // }
 
+std::shared_ptr<Transition> NORGate::PropagateTransition(std::shared_ptr<Transition> transition, Input input) {
+	return nullptr;
+}
+
 NORGate::~NORGate() {
 }

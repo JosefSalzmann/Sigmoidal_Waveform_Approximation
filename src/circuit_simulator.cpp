@@ -25,7 +25,12 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	// read in all input transitions
 	for (auto input = circuit_inputs.begin(); input != circuit_inputs.end(); input++) {
 		(*input)->ReadTransitionsFromInputFile();
+		auto input_transitions = (*input)->GetTransitions();
+		for (auto in_transition = input_transitions.begin(); in_transition != input_transitions.end(); in_transition++) {
+			transition_schedule.AddFutureTransition((*in_transition));
+		}
 	}
+	transition_schedule.SortFutureTransitions();
 }
 
 /*
@@ -49,7 +54,7 @@ void CircuitSimulator::InitializeNORGates() {
 	std::vector<ParsedGate> parsed_nor_gates = parser.GetGates();
 	std::sort(parsed_nor_gates.begin(), parsed_nor_gates.end(), &ParsedNORGateSorter);
 	for (auto it = parsed_nor_gates.begin(); it != parsed_nor_gates.end(); it++) {
-		std::shared_ptr<NORGate> nor_gate(new NORGate(it->gate_name, it->ouput_name, -1.0));
+		std::shared_ptr<NORGate> nor_gate(new NORGate(it->gate_name, it->ouput_name, {}));
 		nor_gates.push_back(nor_gate);
 	}
 
@@ -227,7 +232,7 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 	if (!solvable) {
 		// TODO: report that no initial assignment can be found
 		std::cerr << "Circuit initial values cannot be computed" << std::endl;
-		return;
+		throw std::exception();
 	}
 
 	// recover the initial output values from the sat-solver model and apply them
@@ -254,6 +259,15 @@ void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> 
 	auto subscribers = nor_gate->GetSubscribers();
 	for (auto subscriber = subscribers.begin(); subscriber != subscribers.end(); subscriber++) {
 		subscriber->nor_gate->SetInitialInput(initial_value, subscriber->input);
+	}
+}
+
+void CircuitSimulator::SimulateCircuit() {
+	while (transition_schedule.HasFutureTransitions()) {
+		auto current_transition = transition_schedule.ConsumeFirstTransition();
+		for (auto sink = current_transition->sinks.begin(); sink != current_transition->sinks.end(); sink++) {
+			sink->nor_gate->PropagateTransition(current_transition, sink->input);
+		}
 	}
 }
 

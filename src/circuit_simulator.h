@@ -32,5 +32,6 @@ class CircuitSimulator {
 	                     transition_schedule{TransitionSchedule()} {};
 	~CircuitSimulator();
 	void InitializeCircuit(const std::string& file_path);
+	void SimulateCircuit();
 };
 #endif

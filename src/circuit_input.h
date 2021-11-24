@@ -28,6 +28,7 @@ class CircuitInput : public TransitionSource {
 	void AddSubscriber(NORGateInput subscriber);
 	void DetermineInitialValue();
 	void ReadTransitionsFromInputFile();
+	std::vector<std::shared_ptr<Transition>>& GetTransitions();
 	~CircuitInput();
 };
 #endif
