@@ -13,7 +13,7 @@
 #include "nor_gate.h"
 
 int CircuitFileParser::ParseFile(const std::string& file_name) {
-	int current_section = -1;  // 0 = input, 1 = gates, 2 = outputs
+	int current_section = -1;  // 0 = input, 1 = gates, 2 = outputs, 3 = transferfunctions
 
 	bool parsing_failed = false;
 
@@ -41,6 +41,8 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 				current_section = 1;
 			} else if (line_no_front_space.compare(0, 7, "OUTPUTS") == 0) {
 				current_section = 2;
+			} else if (line_no_front_space.compare(0, 17, "TRANSFERFUNCTIONS") == 0) {
+				current_section = 3;
 			} else {
 				if (current_section == 0) {
 					if (LineIsParseableInput(line_no_front_space)) {
@@ -61,6 +63,14 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 				} else if (current_section == 2) {
 					if (LineIsParseableOutput(line_no_front_space)) {
 						parsed_outputs.push_back(GetParsedOutput(line));
+					} else {
+						std::cerr << "Cannot parse: " << line << std::endl;
+						parsing_failed = true;
+						break;
+					}
+				} else if (current_section == 3) {
+					if (LineIsParseableTFModel(line_no_front_space)) {
+						parsed_tf_models.push_back(GetParsedTFModel(line));
 					} else {
 						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
@@ -134,6 +144,10 @@ std::vector<ParsedOutput>& CircuitFileParser::GetOutputs() {
 	return parsed_outputs;
 }
 
+std::vector<ParsedTFModel>& CircuitFileParser::GetTFModels() {
+	return parsed_tf_models;
+}
+
 int CircuitFileParser::CountSpaces(const std::string& line) {
 	int num_spaces = 0;
 	for (int i = 0; i < (int)line.length(); i++) {
@@ -142,20 +156,30 @@ int CircuitFileParser::CountSpaces(const std::string& line) {
 	}
 	return num_spaces;
 }
+
 bool CircuitFileParser::LineIsParseableInput(const std::string& line) {
 	if (CountSpaces(line) == 1)
 		return true;
 	else
 		return false;
 }
+
 bool CircuitFileParser::LineIsParseableGate(const std::string& line) {
 	if (CountSpaces(line) == 3)
 		return true;
 	else
 		return false;
 }
+
 bool CircuitFileParser::LineIsParseableOutput(const std::string& line) {
 	if (CountSpaces(line) == 0)
+		return true;
+	else
+		return false;
+}
+
+bool CircuitFileParser::LineIsParseableTFModel(const std::string& line) {
+	if (CountSpaces(line) == 2)
 		return true;
 	else
 		return false;
@@ -191,6 +215,20 @@ ParsedOutput CircuitFileParser::GetParsedOutput(const std::string& line) {
 	ParsedOutput output;
 	output.node_name = line;
 	return output;
+}
+
+ParsedTFModel CircuitFileParser::GetParsedTFModel(const std::string& line) {
+	ParsedTFModel tf_model;
+	int substring_start = 0;
+	int substring_end = line.find(' ');
+	tf_model.tf_model_type = line.substr(substring_start, substring_end - substring_start);
+	substring_start = substring_end + 1;
+	substring_end = line.find(' ', substring_start);
+	tf_model.tf_approach = line.substr(substring_start, substring_end - substring_start);
+	substring_start = substring_end + 1;
+	substring_end = line.find(' ', substring_start);
+	tf_model.file_name = line.substr(substring_start, substring_end - substring_start);
+	return tf_model;
 }
 
 CircuitFileParser::~CircuitFileParser() {

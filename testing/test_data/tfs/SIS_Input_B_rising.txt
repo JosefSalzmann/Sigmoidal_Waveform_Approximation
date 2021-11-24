@@ -1,0 +1,28 @@
+output_steepness
+offset,-395.41008818049636
+input2_steepness,1,157.81007487318706
+input2_steepness,2,-23.25056090176769
+input2_steepness,3,1.136816079782818
+previous_output_steepness,1,12.65256782417913
+previous_output_steepness,2,-1.5150414725981745
+previous_output_steepness,3,0.056891408592424364
+previous_output_shift,1,-13.989572668434196
+previous_output_shift,2,8.833930903669847
+previous_output_shift,3,-1.757871404191495
+
+output_shift
+offset,2.2019916641840656
+input2_steepness,1,-1.218747026879267
+input2_steepness,2,0.18541689571824654
+input2_steepness,3,-0.009265592194047666
+previous_output_steepness,1,0.20652773656439993
+previous_output_steepness,2,-0.02511208040731991
+previous_output_steepness,3,0.0008696288065760061
+previous_output_shift,1,0.29699303669255855
+previous_output_shift,2,-0.2020194531882176
+previous_output_shift,3,0.04273160019481024
+
+
+
+output_steepness RMSE,0.19410006752171738
+output_shift RMSE,0.00394090632642858

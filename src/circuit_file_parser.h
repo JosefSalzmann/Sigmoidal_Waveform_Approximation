@@ -25,11 +25,18 @@ struct ParsedOutput {
 	std::string node_name;
 };
 
+struct ParsedTFModel {
+	std::string tf_model_type;  // possible values: SIS_Input_A_Falling, SIS_Input_B_Rising, MIS_Input_A_First_RR
+	std::string tf_approach;    // possible values: LUT, POLY = Polyonimal, ANN = Artificial Neural Network, ...
+	std::string file_name;
+};
+
 class CircuitFileParser {
    private:
 	std::vector<ParsedInput> parsed_inputs;
 	std::vector<ParsedGate> parsed_gates;
 	std::vector<ParsedOutput> parsed_outputs;
+	std::vector<ParsedTFModel> parsed_tf_models;
 
    public:
 	CircuitFileParser() : parsed_inputs{}, parsed_gates{}, parsed_outputs{} {}
@@ -39,17 +46,18 @@ class CircuitFileParser {
 	std::vector<ParsedInput>& GetInputs();
 	std::vector<ParsedGate>& GetGates();
 	std::vector<ParsedOutput>& GetOutputs();
-	// std::vector<NORGateInput> GetInputSubscribers(ParsedInput Input);
-	// std::vector<NORGateInput> GetGateSubscribers(ParsedGate Gate);
+	std::vector<ParsedTFModel>& GetTFModels();
 
    private:
 	int CountSpaces(const std::string& line);
 	bool LineIsParseableInput(const std::string& line);
 	bool LineIsParseableGate(const std::string& line);
 	bool LineIsParseableOutput(const std::string& line);
+	bool LineIsParseableTFModel(const std::string& line);
 	ParsedInput GetParsedInput(const std::string& line);
 	ParsedGate GetParsedGate(const std::string& line);
 	ParsedOutput GetParsedOutput(const std::string& line);
+	ParsedTFModel GetParsedTFModel(const std::string& line);
 };
 
 #endif

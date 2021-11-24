@@ -11,6 +11,8 @@
 
 #include "circuit_file_parser.h"
 #include "nor_gate.h"
+#include "polynomial_mis_transfer_function.h"
+#include "polynomial_sis_transfer_function.h"
 
 void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	parser.ParseFile(file_path);
@@ -260,6 +262,38 @@ void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> 
 	for (auto subscriber = subscribers.begin(); subscriber != subscribers.end(); subscriber++) {
 		subscriber->nor_gate->SetInitialInput(initial_value, subscriber->input);
 	}
+}
+
+void CircuitSimulator::InitializeTransferFunctions() {
+	std::vector<ParsedTFModel> parsed_tf_models = parser.GetTFModels();
+	if (parsed_tf_models.size() != 6) {
+		std::cerr << "Transfer functions could not be parsed" << std::endl;
+		throw std::exception();
+	}
+
+	transfer_functions.sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS);
+}
+
+std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type) {
+	std::string tf_approach = sis_transfer_function.tf_approach;
+	std::transform(tf_approach.begin(), tf_approach.begin(), tf_approach.begin(), ::toupper);
+	std::shared_ptr<TransferFunction> transfer_function;
+	if (tf_approach.compare("POLY") == 0) {
+		if (model_type == SIS) {
+			transfer_function = std::make_shared<PolynomialSISTransferFunction>();
+		} else {
+			transfer_function = std::make_shared<PolynomialMISTransferFunction>();
+		}
+		transfer_function->ReadModel(sis_transfer_function.file_name);
+
+	} else {
+		std::cerr << "Unknown transfer functions approach: " << sis_transfer_function.tf_approach << std::endl;
+		throw std::exception();
+	}
+	// else if (tf_approach.compare("ANN") == 0) {
+	// } else if (tf_approach.compare("LUT") == 0) {
+	// }
+	return transfer_function;
 }
 
 void CircuitSimulator::SimulateCircuit() {

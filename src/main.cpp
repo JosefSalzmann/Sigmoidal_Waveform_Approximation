@@ -5,7 +5,7 @@
 int main() {
 	CircuitSimulator simulator = CircuitSimulator();
 	try {
-		simulator.InitializeCircuit("../testing/test_data/intial_values_test.txt");
+		simulator.InitializeCircuit("../testing/test_data/tf_model_test.txt");
 	} catch (const std::exception& e) {
 		return -1;
 	}

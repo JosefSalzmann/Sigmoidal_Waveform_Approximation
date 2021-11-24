@@ -51,18 +51,25 @@ struct Transition {
 	bool cancelation;
 };
 
-class TranferFunction {
+enum TFModelType {
+	SIS,
+	MIS
+};
+
+class TransferFunction {
    public:
-	virtual ~TranferFunction() {}
+	virtual ~TransferFunction() {}
 	virtual void ReadModel(const std::string& file_name) = 0;
-	virtual TransitionParameters CalculatePropagation(TransitionParameters input_parameters) = 0;
+	virtual TransitionParameters CalculatePropagation(std::vector<TransitionParameters> parameters) = 0;
 };
 
 struct TFCollection {
-	std::shared_ptr<TranferFunction> sis_input_a;
-	std::shared_ptr<TranferFunction> sis_input_b;
-	std::shared_ptr<TranferFunction> mis_rr_input_a_first;  // both inputs rising, shift_a < shift_b
-	std::shared_ptr<TranferFunction> mis_rr_input_b_first;  // both inputs rising, shift_b < shift_a
+	std::shared_ptr<TransferFunction> sis_input_a_falling;
+	std::shared_ptr<TransferFunction> sis_input_a_rising;
+	std::shared_ptr<TransferFunction> sis_input_b_falling;
+	std::shared_ptr<TransferFunction> sis_input_b_rising;
+	std::shared_ptr<TransferFunction> mis_input_a_first_rr;  // both inputs rising, shift_a < shift_b
+	std::shared_ptr<TransferFunction> mis_input_b_first_rr;  // both inputs rising, shift_b < shift_a
 };
 
 #include "gnd_potential.h"
