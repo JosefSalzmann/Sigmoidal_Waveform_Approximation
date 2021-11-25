@@ -39,7 +39,7 @@ int PolynomialSISTransferFunction::GetDegreeOfModel(const std::string& file_name
 		if (line_count >= 3) {
 			auto line_split = GetLineSplit(line);
 			if (line_split.size() != 3) {
-				std::cerr << "Invalid transfer function specification" << line << std::endl;
+				std::cerr << "Invalid transfer function specification: " << file_name << std::endl;
 				throw std::exception();
 			}
 			int degree = atoi(line_split[1].c_str());
@@ -56,7 +56,8 @@ int PolynomialSISTransferFunction::GetDegreeOfModel(const std::string& file_name
 		}
 		line_count++;
 	}
-	return 0;
+	std::cerr << "Invalid transfer function specification" << file_name << std::endl;
+	throw std::exception();
 }
 
 /*

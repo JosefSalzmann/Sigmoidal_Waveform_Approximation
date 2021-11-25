@@ -177,12 +177,12 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 			input_a_lit = CMSat::Lit(1 + input_a_nor_gate_index, false);
 			input_a_lit_neg = CMSat::Lit(1 + input_a_nor_gate_index, true);
 		} else if (input_a_initial == VDD) {
-			input_a_lit = CMSat::Lit(0, true);
-			input_a_lit_neg = CMSat::Lit(0, false);
-			(*it)->SetInitialInput(VDD, Input_A);
-		} else {
 			input_a_lit = CMSat::Lit(0, false);
 			input_a_lit_neg = CMSat::Lit(0, true);
+			(*it)->SetInitialInput(VDD, Input_A);
+		} else {
+			input_a_lit = CMSat::Lit(0, true);
+			input_a_lit_neg = CMSat::Lit(0, false);
 			(*it)->SetInitialInput(GND, Input_A);
 		}
 
@@ -193,12 +193,12 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 			input_b_lit = CMSat::Lit(1 + input_b_nor_gate_index, false);
 			input_b_lit_neg = CMSat::Lit(1 + input_b_nor_gate_index, true);
 		} else if (input_b_initial == VDD) {
-			input_b_lit = CMSat::Lit(0, true);
-			input_b_lit_neg = CMSat::Lit(0, false);
-			(*it)->SetInitialInput(VDD, Input_B);
-		} else {
 			input_b_lit = CMSat::Lit(0, false);
 			input_b_lit_neg = CMSat::Lit(0, true);
+			(*it)->SetInitialInput(VDD, Input_B);
+		} else {
+			input_b_lit = CMSat::Lit(0, true);
+			input_b_lit_neg = CMSat::Lit(0, false);
 			(*it)->SetInitialInput(GND, Input_B);
 		}
 
@@ -267,7 +267,7 @@ void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> 
 
 void CircuitSimulator::InitializeTransferFunctions() {
 	std::vector<ParsedTFModel> parsed_tf_models = parser.GetTFModels();
-	// TODO:
+	// TODO: initialize all tfs
 	// if (parsed_tf_models.size() != 6) {
 	// 	std::cerr << "Transfer functions could not be parsed" << std::endl;
 	// 	throw std::exception();

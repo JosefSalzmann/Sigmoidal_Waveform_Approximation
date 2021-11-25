@@ -86,6 +86,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 	if (parsing_failed) {
 		throw std::exception();
 	}
+	// TODO: check if all sections were present.
 	return 0;
 }
 
