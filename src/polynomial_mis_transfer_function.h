@@ -8,12 +8,11 @@
 
 class PolynomialMISTransferFunction : public TransferFunction {
    private:
-	/* data */
    public:
 	PolynomialMISTransferFunction();
 	~PolynomialMISTransferFunction();
 	void ReadModel(const std::string& file_name) override;
-	TransitionParameters CalculatePropagation(std::vector<TransitionParameters> parameters) override;
+	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
 };
 
 #endif

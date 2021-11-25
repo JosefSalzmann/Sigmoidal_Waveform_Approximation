@@ -8,12 +8,17 @@
 
 class PolynomialSISTransferFunction : public TransferFunction {
    private:
-	/* data */
+	std::vector<double> steepness_tf_params;
+	std::vector<double> shift_tf_params;
+
+	int GetDegreeOfModel(const std::string& file_name);
+	std::vector<std::string> GetLineSplit(const std::string& line);
+
    public:
 	PolynomialSISTransferFunction();
 	~PolynomialSISTransferFunction();
 	void ReadModel(const std::string& file_name) override;
-	TransitionParameters CalculatePropagation(std::vector<TransitionParameters> parameters) override;
+	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
 };
 
 #endif

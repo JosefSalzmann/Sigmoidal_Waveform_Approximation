@@ -60,7 +60,7 @@ class TransferFunction {
    public:
 	virtual ~TransferFunction() {}
 	virtual void ReadModel(const std::string& file_name) = 0;
-	virtual TransitionParameters CalculatePropagation(std::vector<TransitionParameters> parameters) = 0;
+	virtual TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) = 0;
 };
 
 struct TFCollection {

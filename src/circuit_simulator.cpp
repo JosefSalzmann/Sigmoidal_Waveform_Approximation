@@ -23,6 +23,7 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	InitializeInputs();
 	InitializeNORGates();
 	DetermineGatesInitialValues();
+	InitializeTransferFunctions();
 
 	// read in all input transitions
 	for (auto input = circuit_inputs.begin(); input != circuit_inputs.end(); input++) {
@@ -266,17 +267,18 @@ void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> 
 
 void CircuitSimulator::InitializeTransferFunctions() {
 	std::vector<ParsedTFModel> parsed_tf_models = parser.GetTFModels();
-	if (parsed_tf_models.size() != 6) {
-		std::cerr << "Transfer functions could not be parsed" << std::endl;
-		throw std::exception();
-	}
+	// TODO:
+	// if (parsed_tf_models.size() != 6) {
+	// 	std::cerr << "Transfer functions could not be parsed" << std::endl;
+	// 	throw std::exception();
+	// }
 
 	transfer_functions.sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS);
 }
 
 std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type) {
 	std::string tf_approach = sis_transfer_function.tf_approach;
-	std::transform(tf_approach.begin(), tf_approach.begin(), tf_approach.begin(), ::toupper);
+	std::transform(tf_approach.begin(), tf_approach.end(), tf_approach.begin(), ::toupper);
 	std::shared_ptr<TransferFunction> transfer_function;
 	if (tf_approach.compare("POLY") == 0) {
 		if (model_type == SIS) {
