@@ -8,8 +8,8 @@
 
 class PolynomialSISTransferFunction : public TransferFunction {
    private:
-	std::vector<double> steepness_tf_params;
-	std::vector<double> shift_tf_params;
+	std::vector<double> steepness_tf_coeffs;
+	std::vector<double> shift_tf_coeffs;
 
 	int GetDegreeOfModel(const std::string& file_name);
 	std::vector<std::string> GetLineSplit(const std::string& line);

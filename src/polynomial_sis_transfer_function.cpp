@@ -8,6 +8,11 @@
 PolynomialSISTransferFunction::PolynomialSISTransferFunction(/* args */) {
 }
 
+/*
+ * Read the coefficients of the polynomial.
+ * Not a robust impelementation!
+ * Only intedended to read automatically generated transfer functions.
+ */
 void PolynomialSISTransferFunction::ReadModel(const std::string& file_name) {
 	std::ifstream input_file_stream(file_name);
 	if (input_file_stream.fail()) {
@@ -15,19 +20,54 @@ void PolynomialSISTransferFunction::ReadModel(const std::string& file_name) {
 		throw std::exception();
 	}
 	int model_degree = GetDegreeOfModel(file_name);
+	int current_parameter = 0;  // 0 = steepness, 1 = shift
 	std::string line = "";
 	while (getline(input_file_stream, line)) {
 		if (line.compare("") == 0) {
 			continue;
 		}
-		auto test = GetLineSplit(line);
+
+		auto line_split = GetLineSplit(line);
+		int coeff_index = -1;
+		if (line_split.size() == 2) {
+			coeff_index = 1;
+		} else if (line_split.size() == 3) {
+			coeff_index = 2;
+		} else if (line_split.size() == 1) {
+			continue;
+		} else {
+			std::cerr << "Parsing error in: " << file_name << std::endl;
+			throw std::exception();
+		}
+
+		char* endptr;
+		errno = 0;
+		double current_coeff = std::strtod(line_split[coeff_index].c_str(), &endptr);
+		if (*endptr != '\0' ||  // error, we didn't consume the entire string
+		    errno != 0)         // error, overflow or underflow
+		{
+			std::cerr << "conversion error in " << file_name << ": " << line << std::endl;
+			throw std::exception();
+		}
+
+		if (current_parameter == 0) {
+			steepness_tf_coeffs.push_back(current_coeff);
+			if ((int)steepness_tf_coeffs.size() == 3 * model_degree + 1) {
+				current_parameter++;
+			}
+		} else {
+			shift_tf_coeffs.push_back(current_coeff);
+			if ((int)shift_tf_coeffs.size() == 3 * model_degree + 1) {
+				return;
+			}
+		}
 	}
 }
 
 /*
  *  Get the degree of the polynomial.
  *  The first line should contain "output_steepness".
- *  The second line "offset,xxxxxxxxx".
+ *  The second line "offset,<offset>", where <offset> is a double.
  *  And the following lines the coefficients of the first parameter.
  */
 int PolynomialSISTransferFunction::GetDegreeOfModel(const std::string& file_name) {
