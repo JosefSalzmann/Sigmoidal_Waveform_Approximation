@@ -8,13 +8,15 @@
 #include <fstream>
 #include <iostream>
 #include <set>
+#include <sstream>
 #include <string>
 
 #include "nor_gate.h"
 
 int CircuitFileParser::ParseFile(const std::string& file_name) {
-	int current_section = -1;  // 0 = input, 1 = gates, 2 = outputs, 3 = transferfunctions
+	SetPathToCircuitFile(file_name);
 
+	int current_section = -1;  // 0 = input, 1 = gates, 2 = outputs, 3 = transferfunctions
 	bool parsing_failed = false;
 
 	std::ifstream input_file_stream(file_name);
@@ -85,6 +87,19 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 		throw std::exception();
 	}
 	return 0;
+}
+
+/*
+ * Return the path to circuit file, i.e. everything of the file_path except the filename.
+ */
+void CircuitFileParser::SetPathToCircuitFile(const std::string& file_path) {
+	int previous_slash_pos = 0;
+	auto slash_pos = file_path.find('/');
+	while (slash_pos != std::string::npos) {
+		previous_slash_pos = slash_pos + 1;
+		slash_pos = file_path.find('/', slash_pos + 1);
+	}
+	path_to_circuit_file = file_path.substr(0, previous_slash_pos);
 }
 
 /**
@@ -192,7 +207,9 @@ ParsedInput CircuitFileParser::GetParsedInput(const std::string& line) {
 	input.node_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	input.file_name = line.substr(substring_start, substring_end - substring_start);
+	std::stringstream ss;
+	ss << path_to_circuit_file << line.substr(substring_start, substring_end - substring_start);
+	input.file_name = ss.str();
 	return input;
 }
 ParsedGate CircuitFileParser::GetParsedGate(const std::string& line) {
@@ -227,7 +244,9 @@ ParsedTFModel CircuitFileParser::GetParsedTFModel(const std::string& line) {
 	tf_model.tf_approach = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
-	tf_model.file_name = line.substr(substring_start, substring_end - substring_start);
+	std::stringstream ss;
+	ss << path_to_circuit_file << line.substr(substring_start, substring_end - substring_start);
+	tf_model.file_name = ss.str();
 	return tf_model;
 }
 

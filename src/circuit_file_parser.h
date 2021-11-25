@@ -37,6 +37,7 @@ class CircuitFileParser {
 	std::vector<ParsedGate> parsed_gates;
 	std::vector<ParsedOutput> parsed_outputs;
 	std::vector<ParsedTFModel> parsed_tf_models;
+	std::string path_to_circuit_file;
 
    public:
 	CircuitFileParser() : parsed_inputs{}, parsed_gates{}, parsed_outputs{} {}
@@ -58,6 +59,7 @@ class CircuitFileParser {
 	ParsedGate GetParsedGate(const std::string& line);
 	ParsedOutput GetParsedOutput(const std::string& line);
 	ParsedTFModel GetParsedTFModel(const std::string& line);
+	void SetPathToCircuitFile(const std::string& file_path);
 };
 
 #endif

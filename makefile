@@ -1,4 +1,5 @@
 CXX = g++
+# TODO change -g to -O3 in the end
 CXXFLAGS = -Wall -g
 LIBS = -L. -lcryptominisat5
 
