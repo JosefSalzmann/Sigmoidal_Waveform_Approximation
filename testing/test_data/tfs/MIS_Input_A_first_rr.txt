@@ -9,12 +9,12 @@ t_A_minus_t_B,3,-5.526409411719438
 inputB_steepness,1,-24.444437923156542
 inputB_steepness,2,2.6724874085889083
 inputB_steepness,3,-0.09433348749322683
-t_A_minus_t_{previous_output_shift},1,0.20623729592568027
-t_A_minus_t_{previous_output_shift},2,0.10733140854621818
-t_A_minus_t_{previous_output_shift},3,-0.006484972910314582
-previous_output_steepness,1,-2.5166790563995582
-previous_output_steepness,2,-0.9441562700921862
-previous_output_steepness,3,0.8892737187880475
+previous_output_steepness,1,0.20623729592568027
+previous_output_steepness,2,0.10733140854621818
+previous_output_steepness,3,-0.006484972910314582
+t_A_minus_t_{previous_output_shift},1,-2.5166790563995582
+t_A_minus_t_{previous_output_shift},2,-0.9441562700921862
+t_A_minus_t_{previous_output_shift},3,0.8892737187880475
 
 output_shift
 offset,1.3176154291961368
@@ -27,12 +27,12 @@ t_A_minus_t_B,3,-0.034493441602524384
 inputB_steepness,1,0.1546711301971757
 inputB_steepness,2,-0.01583608870896012
 inputB_steepness,3,0.0005337170176827182
-t_A_minus_t_{previous_output_shift},1,0.7924838417730681
-t_A_minus_t_{previous_output_shift},2,-0.09855238740152192
-t_A_minus_t_{previous_output_shift},3,0.0035787874833065865
-previous_output_steepness,1,-0.4221496015126225
-previous_output_steepness,2,0.2586525962023527
-previous_output_steepness,3,-0.03320297126568631
+previous_output_steepness,1,0.7924838417730681
+previous_output_steepness,2,-0.09855238740152192
+previous_output_steepness,3,0.0035787874833065865
+t_A_minus_t_{previous_output_shift},1,-0.4221496015126225
+t_A_minus_t_{previous_output_shift},2,0.2586525962023527
+t_A_minus_t_{previous_output_shift},3,-0.03320297126568631
 
 
 

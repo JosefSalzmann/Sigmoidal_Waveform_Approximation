@@ -8,8 +8,18 @@
 
 class PolynomialMISTransferFunction : public TransferFunction {
    private:
+	std::vector<double> steepness_tf_coeffs;
+	std::vector<double> shift_tf_coeffs;
+	TransitionParameters default_prev_tr;
+	double MAX_TIME_SHIFT;
+	int model_degree;
+
+	int GetDegreeOfModel(const std::string& file_name);
+	std::vector<std::string> GetLineSplit(const std::string& line);
+	double CalculateParameter(const std::vector<double>& coeffs, const std::vector<double>& parameters);
+
    public:
-	PolynomialMISTransferFunction();
+	PolynomialMISTransferFunction() : MAX_TIME_SHIFT{2}, model_degree{-1} {};
 	~PolynomialMISTransferFunction();
 	void ReadModel(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;

@@ -274,7 +274,12 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	// }
 
 	transfer_functions.sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS);
-	auto test = transfer_functions.sis_input_a_falling->CalculatePropagation({{-12.29082, 20.41639}, {-12.24565, 18.96157}});
+	transfer_functions.sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[1], SIS);
+	transfer_functions.sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[2], SIS);
+	transfer_functions.sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[3], SIS);
+	transfer_functions.mis_input_a_first_rr = InitializeTransferFunction(parsed_tf_models[4], MIS);
+	transfer_functions.mis_input_a_first_rr->CalculatePropagation({{7.54901, 19.23945}, {7.6197, 19.47149}, {7.58732, 18.76822}});
+	transfer_functions.mis_input_b_first_rr = InitializeTransferFunction(parsed_tf_models[5], MIS);
 }
 
 std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type) {

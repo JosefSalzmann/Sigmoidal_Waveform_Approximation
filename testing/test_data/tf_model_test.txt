@@ -13,3 +13,7 @@ OUT3
 TRANSFERFUNCTIONS
 SIS_A_F POLY tfs/SIS_Input_A_falling.txt
 SIS_A_R POLY tfs/SIS_Input_A_rising.txt
+SIS_B_F POLY tfs/SIS_Input_B_falling.txt
+SIS_B_R POLY tfs/SIS_Input_B_rising.txt
+MIS_A_frist_RR POLY tfs/MIS_Input_A_first_rr.txt
+MIS_B_frist_RR POLY tfs/MIS_Input_B_first_rr.txt
