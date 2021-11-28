@@ -274,6 +274,7 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	// }
 
 	transfer_functions.sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS);
+	auto test = transfer_functions.sis_input_a_falling->CalculatePropagation({{-12.29082, 20.41639}, {-12.24565, 18.96157}});
 }
 
 std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type) {

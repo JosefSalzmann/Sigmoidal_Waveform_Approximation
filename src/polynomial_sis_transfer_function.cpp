@@ -1,12 +1,11 @@
 
 #include "polynomial_sis_transfer_function.h"
 
+#include <math.h>
+
 #include <cerrno>
 #include <fstream>
 #include <iostream>
-
-PolynomialSISTransferFunction::PolynomialSISTransferFunction(/* args */) {
-}
 
 /*
  * Read the coefficients of the polynomial.
@@ -19,7 +18,7 @@ void PolynomialSISTransferFunction::ReadModel(const std::string& file_name) {
 		std::cerr << "File not found: " << file_name << std::endl;
 		throw std::exception();
 	}
-	int model_degree = GetDegreeOfModel(file_name);
+	model_degree = GetDegreeOfModel(file_name);
 	int current_parameter = 0;  // 0 = steepness, 1 = shift
 	std::string line = "";
 	while (getline(input_file_stream, line)) {
@@ -62,6 +61,11 @@ void PolynomialSISTransferFunction::ReadModel(const std::string& file_name) {
 			}
 		}
 	}
+}
+
+void PolynomialSISTransferFunction::SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) {
+	MAX_TIME_SHIFT = maximal_shift;
+	default_prev_tr = default_prev_transition;
 }
 
 /*
@@ -122,7 +126,38 @@ std::vector<std::string> PolynomialSISTransferFunction::GetLineSplit(const std::
  * of the previous output transition
  */
 TransitionParameters PolynomialSISTransferFunction::CalculatePropagation(const std::vector<TransitionParameters>& parameters) {
-	return {};
+	TransitionParameters current_inp_tr = parameters[0];
+	TransitionParameters prev_outp_tr;
+	if (parameters.size() == 1) {
+		prev_outp_tr = default_prev_tr;
+	} else {
+		prev_outp_tr = parameters[1];
+	}
+
+	double current_inp_steep = current_inp_tr.steepness;
+	double prev_out_steep = prev_outp_tr.steepness;
+	double time_shift = current_inp_tr.shift - prev_outp_tr.shift;
+
+	if (time_shift > MAX_TIME_SHIFT) {
+		time_shift = MAX_TIME_SHIFT;
+	}
+
+	double output_steep = CalculateParameter(steepness_tf_coeffs, {current_inp_steep, prev_out_steep, time_shift});
+	double output_shift = CalculateParameter(shift_tf_coeffs, {current_inp_steep, prev_out_steep, time_shift});
+
+	return {output_steep, current_inp_tr.shift + output_shift};
+}
+
+double PolynomialSISTransferFunction::CalculateParameter(
+    const std::vector<double>& coeffs,
+    const std::vector<double>& parameters) {
+	double output_parameter = coeffs[0];
+	for (int i = 0; i < (int)parameters.size(); i++) {
+		for (int j = 1; j < model_degree + 1; j++) {
+			output_parameter += pow(parameters[i], j) * coeffs[i * model_degree + j];
+		}
+	}
+	return output_parameter;
 }
 
 PolynomialSISTransferFunction::~PolynomialSISTransferFunction() {

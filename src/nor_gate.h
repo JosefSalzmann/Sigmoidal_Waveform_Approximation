@@ -61,6 +61,7 @@ class TransferFunction {
 	virtual ~TransferFunction() {}
 	virtual void ReadModel(const std::string& file_name) = 0;
 	virtual TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) = 0;
+	virtual void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) = 0;
 };
 
 struct TFCollection {
