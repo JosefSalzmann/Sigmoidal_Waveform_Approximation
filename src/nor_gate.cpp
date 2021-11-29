@@ -73,5 +73,33 @@ std::shared_ptr<Transition> NORGate::PropagateTransition(const Transition& trans
 	return nullptr;
 }
 
+/*
+ *	Check if transition if the other input also had a transition near to this
+ * 	one. If yes, use MIS transfer functions to calculate the output transition.
+ */
+bool NORGate::CheckIfMIS(const Transition& transition, Input input) {
+	double current_tr_shift = transition.parameters.shift;
+	if (input == Input_A) {
+		if (input_b_transitions.size() == 0)
+			return false;
+		auto latest_b_tr = input_b_transitions.back();
+		double latest_b_tr_shift = latest_b_tr->parameters.shift;
+		// TODO make the 1.0 configurable
+		if (current_tr_shift - latest_b_tr_shift > 1.0) {
+			return true;
+		}
+	} else {
+		if (input_a_transitions.size() == 0)
+			return false;
+		auto latest_a_tr = input_a_transitions.back();
+		double latest_a_tr_shift = latest_a_tr->parameters.shift;
+		// TODO make the 1.0 configurable
+		if (current_tr_shift - latest_a_tr_shift > 1.0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 NORGate::~NORGate() {
 }

@@ -95,6 +95,8 @@ class NORGate : public TransitionSource {
 	std::vector<NORGateInput> subscribers;
 	std::shared_ptr<TFCollection> transfer_functions;
 
+	bool CheckIfMIS(const Transition& transition, Input input);
+
    public:
 	NORGate(){};
 	NORGate(const std::string& gate_name,
