@@ -96,7 +96,7 @@ void CircuitInput::ReadTransitionsFromInputFile() {
 		transition->source = std::shared_ptr<TransitionSource>(this);
 		transition->sinks = subscribers;
 		transition->parameters = parameters;
-		transition->parent = nullptr;
+		transition->parents = {};
 		transition->children = {};
 		transition->cancelation = false;
 		transitions.push_back(transition);

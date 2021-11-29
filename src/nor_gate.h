@@ -8,6 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "transition_schedule.h"
+
+class TransitionSchedule;
+
 struct NORGateInput;
 struct Transition;
 
@@ -46,7 +50,7 @@ struct Transition {
 	std::shared_ptr<TransitionSource> source;
 	std::vector<NORGateInput> sinks;
 	TransitionParameters parameters;
-	std::shared_ptr<Transition> parent;
+	std::vector<std::shared_ptr<Transition>> parents;  // one parent for SIS, two parents for MIS
 	std::vector<std::shared_ptr<Transition>> children;
 	bool cancelation;
 };
@@ -89,19 +93,19 @@ class NORGate : public TransitionSource {
 	InitialValue initial_value_input_b;
 	InitialValue initial_value_output;
 	std::vector<NORGateInput> subscribers;
-	TFCollection transfer_functions;
+	std::shared_ptr<TFCollection> transfer_functions;
 
    public:
 	NORGate(){};
 	NORGate(const std::string& gate_name,
 	        const std::string& output_node_name,
-	        TFCollection transfer_functions) : gate_name{gate_name},
-	                                           output_node_name{output_node_name},
-	                                           initial_value_input_a{UNDEFINED},
-	                                           initial_value_input_b{UNDEFINED},
-	                                           initial_value_output{UNDEFINED},
-	                                           subscribers{},
-	                                           transfer_functions{transfer_functions} {};
+	        const std::shared_ptr<TFCollection>& transfer_functions) : gate_name{gate_name},
+	                                                                   output_node_name{output_node_name},
+	                                                                   initial_value_input_a{UNDEFINED},
+	                                                                   initial_value_input_b{UNDEFINED},
+	                                                                   initial_value_output{UNDEFINED},
+	                                                                   subscribers{},
+	                                                                   transfer_functions{transfer_functions} {};
 	~NORGate();
 	std::string GetOutputName() override;
 	void SetInitialInput(InitialValue initial_value, Input input);
@@ -112,7 +116,7 @@ class NORGate : public TransitionSource {
 	void AddSubscriber(NORGateInput subscriber);
 	void RemoveOutputTransition(std::shared_ptr<Transition> transition);
 	void RemoveInputTransition(std::shared_ptr<Transition> transition, Input input);
-	std::shared_ptr<Transition> PropagateTransition(std::shared_ptr<Transition> transition, Input input);
+	std::shared_ptr<Transition> PropagateTransition(const Transition&, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
 	static bool NORGateSorter(const NORGate& lhs, const NORGate& rhs);
 	std::shared_ptr<TransitionSource>& GetInputSource(Input input);
 };

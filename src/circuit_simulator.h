@@ -14,8 +14,8 @@ class CircuitSimulator {
 	std::vector<std::shared_ptr<NORGate>> nor_gates;
 	std::vector<std::shared_ptr<CircuitInput>> circuit_inputs;
 	CircuitFileParser parser;
-	TransitionSchedule transition_schedule;
-	TFCollection transfer_functions;
+	std::shared_ptr<TransitionSchedule> transition_schedule;
+	std::shared_ptr<TFCollection> transfer_functions;
 
 	void InitializeNORGates();
 	void InitializeInputs();
@@ -31,7 +31,8 @@ class CircuitSimulator {
 	CircuitSimulator() : nor_gates{},
 	                     circuit_inputs{},
 	                     parser{CircuitFileParser()},
-	                     transition_schedule{TransitionSchedule()} {};
+	                     transition_schedule{},
+	                     transfer_functions{} {};
 	~CircuitSimulator();
 	void InitializeCircuit(const std::string& file_path);
 	std::shared_ptr<TransferFunction> InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type);

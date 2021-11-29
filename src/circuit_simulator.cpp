@@ -20,20 +20,22 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	if (!valid_file) {
 		return;  // TODO: report back that file is not valid
 	}
+
+	InitializeTransferFunctions();
 	InitializeInputs();
 	InitializeNORGates();
 	DetermineGatesInitialValues();
-	InitializeTransferFunctions();
 
 	// read in all input transitions
+	transition_schedule = std::make_shared<TransitionSchedule>();
 	for (auto input = circuit_inputs.begin(); input != circuit_inputs.end(); input++) {
 		(*input)->ReadTransitionsFromInputFile();
 		auto input_transitions = (*input)->GetTransitions();
 		for (auto in_transition = input_transitions.begin(); in_transition != input_transitions.end(); in_transition++) {
-			transition_schedule.AddFutureTransition((*in_transition));
+			transition_schedule->AddFutureTransition((*in_transition));
 		}
 	}
-	transition_schedule.SortFutureTransitions();
+	transition_schedule->SortFutureTransitions();
 }
 
 /*
@@ -57,7 +59,7 @@ void CircuitSimulator::InitializeNORGates() {
 	std::vector<ParsedGate> parsed_nor_gates = parser.GetGates();
 	std::sort(parsed_nor_gates.begin(), parsed_nor_gates.end(), &ParsedNORGateSorter);
 	for (auto it = parsed_nor_gates.begin(); it != parsed_nor_gates.end(); it++) {
-		std::shared_ptr<NORGate> nor_gate(new NORGate(it->gate_name, it->ouput_name, {}));
+		std::shared_ptr<NORGate> nor_gate(new NORGate(it->gate_name, it->ouput_name, transfer_functions));
 		nor_gates.push_back(nor_gate);
 	}
 
@@ -267,19 +269,32 @@ void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> 
 
 void CircuitSimulator::InitializeTransferFunctions() {
 	std::vector<ParsedTFModel> parsed_tf_models = parser.GetTFModels();
-	// TODO: initialize all tfs
-	// if (parsed_tf_models.size() != 6) {
-	// 	std::cerr << "Transfer functions could not be parsed" << std::endl;
-	// 	throw std::exception();
-	// }
 
-	transfer_functions.sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS);
-	transfer_functions.sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[1], SIS);
-	transfer_functions.sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[2], SIS);
-	transfer_functions.sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[3], SIS);
-	transfer_functions.mis_input_a_first_rr = InitializeTransferFunction(parsed_tf_models[4], MIS);
-	transfer_functions.mis_input_a_first_rr->CalculatePropagation({{7.54901, 19.23945}, {7.6197, 19.47149}, {7.58732, 18.76822}});
-	transfer_functions.mis_input_b_first_rr = InitializeTransferFunction(parsed_tf_models[5], MIS);
+	if (parsed_tf_models.size() != 6) {
+		std::cerr << "Transfer functions could not be parsed" << std::endl;
+		throw std::exception();
+	}
+
+	transfer_functions = std::make_shared<TFCollection>();
+
+	transfer_functions->sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS);
+	transfer_functions->sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[1], SIS);
+	transfer_functions->sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[2], SIS);
+	transfer_functions->sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[3], SIS);
+	transfer_functions->mis_input_a_first_rr = InitializeTransferFunction(parsed_tf_models[4], MIS);
+	transfer_functions->mis_input_b_first_rr = InitializeTransferFunction(parsed_tf_models[5], MIS);
+
+	// TODO: make this configurable
+	double max_shift = 1.5;
+	TransitionParameters default_prev_out_rising = {7.36, max_shift};
+	TransitionParameters default_prev_out_falling = {-12.23, max_shift};
+
+	transfer_functions->sis_input_a_falling->SetDefaultValues(default_prev_out_rising, max_shift);
+	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, max_shift);
+	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, max_shift);
+	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, max_shift);
+	transfer_functions->mis_input_a_first_rr->SetDefaultValues(default_prev_out_falling, max_shift);
+	transfer_functions->mis_input_b_first_rr->SetDefaultValues(default_prev_out_falling, max_shift);
 }
 
 std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type) {
@@ -298,6 +313,7 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 		std::cerr << "Unknown transfer functions approach: " << sis_transfer_function.tf_approach << std::endl;
 		throw std::exception();
 	}
+	// TODO: add other tf approaches
 	// else if (tf_approach.compare("ANN") == 0) {
 	// } else if (tf_approach.compare("LUT") == 0) {
 	// }
@@ -305,10 +321,10 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 }
 
 void CircuitSimulator::SimulateCircuit() {
-	while (transition_schedule.HasFutureTransitions()) {
-		auto current_transition = transition_schedule.ConsumeFirstTransition();
+	while (transition_schedule->HasFutureTransitions()) {
+		auto current_transition = transition_schedule->ConsumeFirstTransition();
 		for (auto sink = current_transition->sinks.begin(); sink != current_transition->sinks.end(); sink++) {
-			sink->nor_gate->PropagateTransition(current_transition, sink->input);
+			sink->nor_gate->PropagateTransition(*current_transition, sink->input, transition_schedule);
 		}
 	}
 }

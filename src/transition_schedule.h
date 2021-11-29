@@ -8,6 +8,8 @@
 
 #include "nor_gate.h"
 
+struct Transition;
+
 class TransitionSchedule {
    private:
 	std::vector<std::shared_ptr<Transition>> future_transitions;
