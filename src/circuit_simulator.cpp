@@ -6,7 +6,9 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include "circuit_file_parser.h"
@@ -38,6 +40,7 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	transition_schedule->SortFutureTransitions();
 
 	SimulateCircuit();
+	WriteOutputs();
 }
 
 /*
@@ -326,13 +329,36 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 void CircuitSimulator::SimulateCircuit() {
 	while (transition_schedule->HasFutureTransitions()) {
 		auto current_transition = transition_schedule->ConsumeFirstTransition();
-		if (current_transition->sinks.size() == 0)
+		if (current_transition->sinks.size() == 0 || current_transition->cancelation)
 			continue;
 		for (auto sink = current_transition->sinks.begin(); sink != current_transition->sinks.end(); sink++) {
 			sink->nor_gate->PropagateTransition(current_transition, sink->input, transition_schedule);
 			transition_schedule->AddPastTransition(current_transition);
 		}
 	}
+}
+
+void CircuitSimulator::WriteOutputs() {
+	std::ofstream output_file;
+	output_file.open("output.txt");
+	// TODO: sanitfy check output names
+	auto parsed_outputs = parser.GetOutputs();
+	for (auto it = parsed_outputs.begin(); it != parsed_outputs.end(); it++) {
+		std::string output_name = it->node_name;
+		for (auto nor_gate = nor_gates.begin(); nor_gate != nor_gates.end(); nor_gate++) {
+			if ((*nor_gate)->GetOutputName().compare(output_name) == 0) {
+				output_file << output_name << std::endl;
+				auto output_transitions = (*nor_gate)->GetOutputTransitions();
+				std::stringstream ss;
+				for (auto tr = output_transitions.begin() + 1; tr != output_transitions.end(); tr++) {
+					ss << std::fixed << std::setprecision(5) << (*tr)->parameters.steepness << ",";
+					ss << std::fixed << std::setprecision(5) << (*tr)->parameters.shift << std::endl;
+				}
+				output_file << ss.str() << std::endl;
+			}
+		}
+	}
+	output_file.close();
 }
 
 bool CircuitSimulator::ParsedNORGateSorter(const ParsedGate& lhs, const ParsedGate& rhs) {

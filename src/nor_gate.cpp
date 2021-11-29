@@ -19,6 +19,10 @@ std::shared_ptr<TransitionSource>& NORGate::GetInputSource(Input input) {
 	}
 }
 
+std::vector<std::shared_ptr<Transition>>& NORGate::GetOutputTransitions() {
+	return output_transitions;
+}
+
 void NORGate::AddSubscriber(NORGateInput subscriber) {
 	subscribers.push_back(subscriber);
 }
@@ -76,11 +80,21 @@ InitialValue NORGate::GetInitialOutputValue() {
  * Mark transitons as canceled if cancelation happens.
  */
 void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
+	if (output_node_name.compare("OUT1") == 0) {
+		int debug = 0;
+	}
+
+	if (input == Input_A) {
+		input_a_transitions.push_back(transition);
+	} else {
+		input_b_transitions.push_back(transition);
+	}
+
 	bool mis = CheckIfMIS(*transition, input);
 	if (mis) {
 		// do MIS stuff
 		// tbd...
-		return;
+		// return;
 	}
 
 	// do SIS stuff
@@ -99,7 +113,8 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 	 * this transition does not propagate and the most recent output transition is canceled.
 	 */
 	if (output_transitions.back()->parameters.shift > transition->parameters.shift) {
-		// TODO
+		output_transitions.back()->cancelation = true;
+		return;
 	}
 
 	TransitionParameters generated_outp_tr_params = CaclulateSISParametersAtInput(transition->parameters, input);
@@ -110,6 +125,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 	generated_outp_tr->sinks = subscribers;
 
 	schedule->AddFutureTransition(generated_outp_tr);
+	output_transitions.push_back(generated_outp_tr);
 }
 
 /*
