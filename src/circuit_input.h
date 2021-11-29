@@ -8,7 +8,7 @@
 
 #include "nor_gate.h"
 
-class CircuitInput : public TransitionSource {
+class CircuitInput : public TransitionSource, public std::enable_shared_from_this<CircuitInput> {
    private:
 	std::string file_name;
 	std::string node_name;

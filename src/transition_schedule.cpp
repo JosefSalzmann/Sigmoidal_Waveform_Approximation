@@ -2,7 +2,6 @@
 #include "transition_schedule.h"
 
 #include <algorithm>
-
 TransitionSchedule::TransitionSchedule(/* args */) {
 }
 
@@ -10,7 +9,25 @@ TransitionSchedule::~TransitionSchedule() {
 }
 
 void TransitionSchedule::AddFutureTransition(std::shared_ptr<Transition> transition) {
-	future_transitions.push_back(transition);
+	if (future_transitions.size() == 0) {
+		future_transitions.push_back(transition);
+		return;
+	}
+	if (future_transitions.back()->parameters.shift > transition->parameters.shift) {
+		future_transitions.push_back(transition);
+		return;
+	}
+	if (future_transitions.front()->parameters.shift < transition->parameters.shift) {
+		future_transitions.insert(future_transitions.begin(), transition);
+		return;
+	}
+	for (auto it = future_transitions.end(); it != future_transitions.begin();) {
+		--it;
+		if ((*it)->parameters.shift > transition->parameters.shift) {
+			future_transitions.insert(it + 1, transition);
+			return;
+		}
+	}
 }
 
 void TransitionSchedule::AddPastTransition(std::shared_ptr<Transition> transition) {
@@ -18,7 +35,7 @@ void TransitionSchedule::AddPastTransition(std::shared_ptr<Transition> transitio
 }
 
 /*
- * Sorting is done in reverse, i.e. last transition to scheduled is the first element.
+ * Sorting is done in reverse, i.e. last transition to be scheduled is the first element.
  */
 void TransitionSchedule::SortFutureTransitions() {
 	std::sort(future_transitions.begin(), future_transitions.end(), &TransitionSorter);

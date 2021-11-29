@@ -36,6 +36,8 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 		}
 	}
 	transition_schedule->SortFutureTransitions();
+
+	SimulateCircuit();
 }
 
 /*
@@ -324,8 +326,11 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 void CircuitSimulator::SimulateCircuit() {
 	while (transition_schedule->HasFutureTransitions()) {
 		auto current_transition = transition_schedule->ConsumeFirstTransition();
+		if (current_transition->sinks.size() == 0)
+			continue;
 		for (auto sink = current_transition->sinks.begin(); sink != current_transition->sinks.end(); sink++) {
 			sink->nor_gate->PropagateTransition(current_transition, sink->input, transition_schedule);
+			transition_schedule->AddPastTransition(current_transition);
 		}
 	}
 }

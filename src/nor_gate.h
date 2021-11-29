@@ -82,7 +82,7 @@ struct TFCollection {
 #include "gnd_potential.h"
 #include "vdd_potential.h"
 
-class NORGate : public TransitionSource {
+class NORGate : public TransitionSource, public std::enable_shared_from_this<NORGate> {
    private:
 	std::string gate_name;
 	std::string output_node_name;

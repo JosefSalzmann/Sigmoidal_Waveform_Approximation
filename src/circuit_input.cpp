@@ -93,7 +93,7 @@ void CircuitInput::ReadTransitionsFromInputFile() {
 		}
 		TransitionParameters parameters = ParseInputFileLine(line);
 		std::shared_ptr<Transition> transition(new Transition);
-		transition->source = std::shared_ptr<TransitionSource>(this);
+		transition->source = std::shared_ptr<TransitionSource>(shared_from_this());
 		transition->sinks = subscribers;
 		transition->parameters = parameters;
 		transition->parents = {};
