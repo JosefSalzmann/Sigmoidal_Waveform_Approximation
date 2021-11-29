@@ -68,21 +68,62 @@ bool NORGate::NORGateSorter(const NORGate& lhs, const NORGate& rhs) {
 InitialValue NORGate::GetInitialOutputValue() {
 	return initial_value_output;
 }
-// bool NORGate::operator<(const NORGate& gate) const {
-// 	return gate_name < gate.gate_name;
-// }
 
-// bool NORGate::operator<(const std::string& string) const {
-// 	return gate_name < string;
-// }
+/*
+ * Propgate a transition and register the newly created transition in the schedule.
+ * Mark transitons as canceled if cancelation happens.
+ */
+void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
+	bool mis = CheckIfMIS(*transition, input);
+	if (mis) {
+		// do MIS stuff
+		// tbd...
+		return;
+	}
 
-// bool NORGate::operator<(const char char_ar[]) const {
-// 	std::string str(char_ar);
-// 	return gate_name < str;
-// }
+	// do SIS stuff
+	TransitionParameters generated_outp_tr_params = CaclulateSISParametersAtInput(transition->parameters, input);
+	std::shared_ptr<Transition> generated_outp_tr = std::shared_ptr<Transition>(new Transition);
+	generated_outp_tr->parameters = generated_outp_tr_params;
+	generated_outp_tr->parents = {transition};
+	std::shared_ptr<TransitionSource> source(this);
+	generated_outp_tr->source = source;
+	generated_outp_tr->sinks = subscribers;
 
-std::shared_ptr<Transition> NORGate::PropagateTransition(const Transition& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
-	return nullptr;
+	schedule->AddFutureTransition(generated_outp_tr);
+	schedule->AddPastTransition(transition);
+}
+
+/*
+ *	Calculate the output parameters of the output transition cause by current_input_tr
+ * 	by using the appropriate SIS transfer function, i.e. right input and right polarity.
+ */
+TransitionParameters NORGate::CaclulateSISParametersAtInput(TransitionParameters current_input_tr, Input input) {
+	if (input == Input_A) {
+		TransitionParameters prev_outp_tr = input_b_transitions.back()->parameters;
+
+		if (current_input_tr.steepness > 0) {
+			// rising transition at input A
+			return transfer_functions->sis_input_a_rising->CalculatePropagation(
+			    {current_input_tr, prev_outp_tr});
+		} else {
+			// falling transition at input A
+			return transfer_functions->sis_input_a_falling->CalculatePropagation(
+			    {current_input_tr, prev_outp_tr});
+		}
+	} else {
+		TransitionParameters prev_outp_tr = input_a_transitions.back()->parameters;
+
+		if (current_input_tr.steepness > 0) {
+			// rising transition at input B
+			return transfer_functions->sis_input_b_rising->CalculatePropagation(
+			    {current_input_tr, prev_outp_tr});
+		} else {
+			// falling transition at input B
+			return transfer_functions->sis_input_b_falling->CalculatePropagation(
+			    {current_input_tr, prev_outp_tr});
+		}
+	}
 }
 
 /*

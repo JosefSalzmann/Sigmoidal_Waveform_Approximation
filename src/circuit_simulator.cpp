@@ -325,7 +325,7 @@ void CircuitSimulator::SimulateCircuit() {
 	while (transition_schedule->HasFutureTransitions()) {
 		auto current_transition = transition_schedule->ConsumeFirstTransition();
 		for (auto sink = current_transition->sinks.begin(); sink != current_transition->sinks.end(); sink++) {
-			sink->nor_gate->PropagateTransition(*current_transition, sink->input, transition_schedule);
+			sink->nor_gate->PropagateTransition(current_transition, sink->input, transition_schedule);
 		}
 	}
 }

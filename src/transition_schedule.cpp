@@ -13,6 +13,10 @@ void TransitionSchedule::AddFutureTransition(std::shared_ptr<Transition> transit
 	future_transitions.push_back(transition);
 }
 
+void TransitionSchedule::AddPastTransition(std::shared_ptr<Transition> transition) {
+	past_transitions.push_back(transition);
+}
+
 /*
  * Sorting is done in reverse, i.e. last transition to scheduled is the first element.
  */

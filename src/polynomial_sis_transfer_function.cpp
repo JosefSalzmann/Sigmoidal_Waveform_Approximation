@@ -128,6 +128,8 @@ std::vector<std::string> PolynomialSISTransferFunction::GetLineSplit(const std::
 TransitionParameters PolynomialSISTransferFunction::CalculatePropagation(const std::vector<TransitionParameters>& parameters) {
 	TransitionParameters current_inp_tr = parameters[0];
 	TransitionParameters prev_outp_tr;
+
+	// TODO: maybe remove this check and change method signature since we always get two transitions
 	if (parameters.size() == 1) {
 		prev_outp_tr = default_prev_tr;
 	} else {

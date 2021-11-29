@@ -54,7 +54,7 @@ struct Transition {
 	TransitionParameters parameters;
 	std::vector<std::shared_ptr<Transition>> parents;  // one parent for SIS, two parents for MIS
 	std::vector<std::shared_ptr<Transition>> children;
-	bool cancelation;
+	bool cancelation = false;
 };
 
 enum TFModelType {
@@ -100,6 +100,7 @@ class NORGate : public TransitionSource {
 	std::shared_ptr<Transition> default_rising_tr;
 
 	bool CheckIfMIS(const Transition& transition, Input input);
+	TransitionParameters CaclulateSISParametersAtInput(TransitionParameters current_input_tr, Input input);
 
    public:
 	NORGate(){};
@@ -134,7 +135,7 @@ class NORGate : public TransitionSource {
 	void AddSubscriber(NORGateInput subscriber);
 	void RemoveOutputTransition(std::shared_ptr<Transition> transition);
 	void RemoveInputTransition(std::shared_ptr<Transition> transition, Input input);
-	std::shared_ptr<Transition> PropagateTransition(const Transition&, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
+	void PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
 	static bool NORGateSorter(const NORGate& lhs, const NORGate& rhs);
 	std::shared_ptr<TransitionSource>& GetInputSource(Input input);
 };
