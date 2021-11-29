@@ -27,8 +27,20 @@ void NORGate::SetInitialInput(InitialValue initial_value, Input input) {
 	// set initial input value
 	if (input == Input_A) {
 		initial_value_input_a = initial_value;
+		// place a default transition at -double_max
+		if (initial_value_input_a == GND) {
+			input_a_transitions = {default_falling_tr};
+		} else {
+			input_a_transitions = {default_rising_tr};
+		}
 	} else if (input == Input_B) {
 		initial_value_input_b = initial_value;
+		// place a default transition at -double_max
+		if (initial_value_input_a == GND) {
+			input_b_transitions = {default_falling_tr};
+		} else {
+			input_b_transitions = {default_rising_tr};
+		}
 	}
 
 	// compute new initial output value
@@ -80,8 +92,6 @@ std::shared_ptr<Transition> NORGate::PropagateTransition(const Transition& trans
 bool NORGate::CheckIfMIS(const Transition& transition, Input input) {
 	double current_tr_shift = transition.parameters.shift;
 	if (input == Input_A) {
-		if (input_b_transitions.size() == 0)
-			return false;
 		auto latest_b_tr = input_b_transitions.back();
 		double latest_b_tr_shift = latest_b_tr->parameters.shift;
 		// TODO make the 1.0 configurable
@@ -89,8 +99,6 @@ bool NORGate::CheckIfMIS(const Transition& transition, Input input) {
 			return true;
 		}
 	} else {
-		if (input_a_transitions.size() == 0)
-			return false;
 		auto latest_a_tr = input_a_transitions.back();
 		double latest_a_tr_shift = latest_a_tr->parameters.shift;
 		// TODO make the 1.0 configurable

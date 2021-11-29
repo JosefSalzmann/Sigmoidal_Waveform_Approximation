@@ -59,7 +59,8 @@ void CircuitSimulator::InitializeNORGates() {
 	std::vector<ParsedGate> parsed_nor_gates = parser.GetGates();
 	std::sort(parsed_nor_gates.begin(), parsed_nor_gates.end(), &ParsedNORGateSorter);
 	for (auto it = parsed_nor_gates.begin(); it != parsed_nor_gates.end(); it++) {
-		std::shared_ptr<NORGate> nor_gate(new NORGate(it->gate_name, it->ouput_name, transfer_functions));
+		// TODO: make default steepnesses configurable
+		std::shared_ptr<NORGate> nor_gate(new NORGate(it->gate_name, it->ouput_name, transfer_functions, -12.23, 7.36));
 		nor_gates.push_back(nor_gate);
 	}
 

@@ -4,6 +4,8 @@
 #ifndef NOR_GATE_H
 #define NOR_GATE_H
 
+#include <float.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -94,6 +96,8 @@ class NORGate : public TransitionSource {
 	InitialValue initial_value_output;
 	std::vector<NORGateInput> subscribers;
 	std::shared_ptr<TFCollection> transfer_functions;
+	std::shared_ptr<Transition> default_falling_tr;
+	std::shared_ptr<Transition> default_rising_tr;
 
 	bool CheckIfMIS(const Transition& transition, Input input);
 
@@ -101,13 +105,25 @@ class NORGate : public TransitionSource {
 	NORGate(){};
 	NORGate(const std::string& gate_name,
 	        const std::string& output_node_name,
-	        const std::shared_ptr<TFCollection>& transfer_functions) : gate_name{gate_name},
-	                                                                   output_node_name{output_node_name},
-	                                                                   initial_value_input_a{UNDEFINED},
-	                                                                   initial_value_input_b{UNDEFINED},
-	                                                                   initial_value_output{UNDEFINED},
-	                                                                   subscribers{},
-	                                                                   transfer_functions{transfer_functions} {};
+	        const std::shared_ptr<TFCollection>& transfer_functions,
+	        double default_falling_steepness,
+	        double default_rising_steepness) : gate_name{gate_name},
+	                                           output_node_name{output_node_name},
+	                                           input_a_transitions{},
+	                                           input_b_transitions{},
+	                                           output_transitions{},
+	                                           initial_value_input_a{UNDEFINED},
+	                                           initial_value_input_b{UNDEFINED},
+	                                           initial_value_output{UNDEFINED},
+	                                           subscribers{},
+	                                           transfer_functions{transfer_functions},
+	                                           default_falling_tr{std::make_shared<Transition>()},
+	                                           default_rising_tr{std::make_shared<Transition>()} {
+		default_falling_tr->parameters.steepness = default_falling_steepness;
+		default_falling_tr->parameters.shift = -DBL_MAX;
+		default_rising_tr->parameters.steepness = default_rising_steepness;
+		default_rising_tr->parameters.shift = -DBL_MAX;
+	};
 	~NORGate();
 	std::string GetOutputName() override;
 	void SetInitialInput(InitialValue initial_value, Input input);

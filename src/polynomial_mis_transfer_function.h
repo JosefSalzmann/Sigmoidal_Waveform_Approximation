@@ -19,7 +19,7 @@ class PolynomialMISTransferFunction : public TransferFunction {
 	double CalculateParameter(const std::vector<double>& coeffs, const std::vector<double>& parameters);
 
    public:
-	PolynomialMISTransferFunction() : MAX_TIME_SHIFT{2}, model_degree{-1} {};
+	PolynomialMISTransferFunction() : default_prev_tr{}, MAX_TIME_SHIFT{2}, model_degree{-1} {};
 	~PolynomialMISTransferFunction();
 	void ReadModel(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
