@@ -30,7 +30,7 @@ clean:
 	rm $(OBJ_DIR)/*.o $(MAIN) runTests
 
 check:
-	cppcheck $(SRC_DIR)/* --language=c++ --enable=all --suppress=missingIncludeSystem
+	cppcheck $(SRC_DIR)/*cpp --language=c++ --enable=all --suppress=missingIncludeSystem
 
 all-tests:
 	cmake $(TEST_DIR)/CMakeLists.txt
