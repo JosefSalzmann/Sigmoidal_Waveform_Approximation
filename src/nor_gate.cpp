@@ -103,6 +103,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 
 		generated_outp_tr_params = CaclulateMISParameters(transition->parameters);
 		generated_outp_tr->parents = {transition, mis_partner};
+		generated_outp_tr->is_MIS = true;
 	} else {
 		// do SIS stuff
 

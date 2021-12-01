@@ -78,6 +78,10 @@ struct TFCollection {
 	std::shared_ptr<TransferFunction> sis_input_b_rising;
 	std::shared_ptr<TransferFunction> mis_input_a_first_rr;  // both inputs rising, shift_a < shift_b
 	std::shared_ptr<TransferFunction> mis_input_b_first_rr;  // both inputs rising, shift_b < shift_a
+
+	// TODO: add MIS tranfer functions for both outputs falling!
+	// std::shared_ptr<TransferFunction> mis_input_a_first_ff;  // both inputs falling, shift_a < shift_b
+	// std::shared_ptr<TransferFunction> mis_input_b_first_ff;  // both inputs falling, shift_b < shift_a
 };
 
 #include "gnd_potential.h"
