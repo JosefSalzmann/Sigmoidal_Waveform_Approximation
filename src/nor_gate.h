@@ -55,6 +55,7 @@ struct Transition {
 	std::vector<std::shared_ptr<Transition>> parents;  // one parent for SIS, two parents for MIS
 	std::vector<std::shared_ptr<Transition>> children;
 	bool cancelation = false;
+	bool is_MIS = false;  // true if transition was propagated using MIS transfer functions
 };
 
 enum TFModelType {
@@ -98,9 +99,14 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 	std::shared_ptr<TFCollection> transfer_functions;
 	std::shared_ptr<Transition> default_falling_tr;
 	std::shared_ptr<Transition> default_rising_tr;
+	std::shared_ptr<Transition> mis_partner;
+	Input mis_parnter_input;
 
-	bool CheckIfMIS(const Transition& transition, Input input);
+	bool CheckIfMIS(const std::shared_ptr<Transition>&, Input input);
+	bool TransitionsSamePolarity(const std::shared_ptr<Transition>& transition1, const std::shared_ptr<Transition>& transition2);
+	void CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule);
 	TransitionParameters CaclulateSISParametersAtInput(TransitionParameters current_input_tr, Input input);
+	TransitionParameters CaclulateMISParameters(TransitionParameters current_input_tr);
 
    public:
 	NORGate(){};
@@ -125,7 +131,6 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 		default_rising_tr->parameters.steepness = default_rising_steepness;
 		default_rising_tr->parameters.shift = -DBL_MAX;
 	};
-	~NORGate();
 	std::string GetOutputName() override;
 	void SetInitialInput(InitialValue initial_value, Input input);
 	void SetInputSource(const std::shared_ptr<TransitionSource>& input_source, Input input);

@@ -37,6 +37,6 @@ class CircuitSimulator {
 	void InitializeCircuit(const std::string& file_path);
 	std::shared_ptr<TransferFunction> InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type);
 	void SimulateCircuit();
-	void WriteOutputs();
+	void WriteNOROutputsToFile();
 };
 #endif

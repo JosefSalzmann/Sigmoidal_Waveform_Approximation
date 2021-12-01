@@ -40,7 +40,7 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	transition_schedule->SortFutureTransitions();
 
 	SimulateCircuit();
-	WriteOutputs();
+	WriteNOROutputsToFile();
 }
 
 /*
@@ -329,7 +329,7 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 void CircuitSimulator::SimulateCircuit() {
 	while (transition_schedule->HasFutureTransitions()) {
 		auto current_transition = transition_schedule->ConsumeFirstTransition();
-		if (current_transition->sinks.size() == 0 || current_transition->cancelation)
+		if (current_transition->sinks.size() == 0)
 			continue;
 		for (auto sink = current_transition->sinks.begin(); sink != current_transition->sinks.end(); sink++) {
 			sink->nor_gate->PropagateTransition(current_transition, sink->input, transition_schedule);
@@ -338,7 +338,7 @@ void CircuitSimulator::SimulateCircuit() {
 	}
 }
 
-void CircuitSimulator::WriteOutputs() {
+void CircuitSimulator::WriteNOROutputsToFile() {
 	std::ofstream output_file;
 	output_file.open("output.txt");
 	// TODO: sanitfy check output names

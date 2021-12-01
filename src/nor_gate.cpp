@@ -77,11 +77,14 @@ InitialValue NORGate::GetInitialOutputValue() {
 
 /*
  * Propgate a transition and register the newly created transition in the schedule.
- * Mark transitons as canceled if cancelation happens.
+ * Mark transitons as cancelled if cancelation happens.
  */
 void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
-	if (output_node_name.compare("OUT1") == 0) {
+	if (output_node_name.compare("OUT2") == 0) {
 		int debug = 0;
+	}
+	if (transition->cancelation) {
+		return;
 	}
 
 	if (input == Input_A) {
@@ -90,37 +93,43 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		input_b_transitions.push_back(transition);
 	}
 
-	bool mis = CheckIfMIS(*transition, input);
+	TransitionParameters generated_outp_tr_params;
+	std::shared_ptr<Transition> generated_outp_tr = std::shared_ptr<Transition>(new Transition);
+	bool mis = CheckIfMIS(transition, input);
 	if (mis) {
 		// do MIS stuff
-		// tbd...
-		// return;
+		// throw away the last output transition, since it gets overwritten now.
+		output_transitions.pop_back();
+
+		generated_outp_tr_params = CaclulateMISParameters(transition->parameters);
+		generated_outp_tr->parents = {transition, mis_partner};
+	} else {
+		// do SIS stuff
+
+		/* if the last transition of the other input was rising i.e. other input is now at
+		* VDD, the transition does not propagate
+		*/
+		if ((input == Input_A && input_b_transitions.back()->parameters.steepness > 0) ||
+		    (input == Input_B && input_a_transitions.back()->parameters.steepness > 0)) {
+			return;
+		}
+
+		/*
+		* Check for cancelation
+		* If the current transition happens before the most recent output transition,
+		* this transition does not propagate and the most recent output transition is cancelled.
+		*/
+		if (output_transitions.back()->parameters.shift > transition->parameters.shift) {
+			CancelTransition(output_transitions.back(), schedule);
+			return;
+		}
+
+		generated_outp_tr_params = CaclulateSISParametersAtInput(transition->parameters, input);
+		generated_outp_tr->parents = {transition};
 	}
 
-	// do SIS stuff
-
-	/* if the last transition of the other input was rising i.e. other input is now at
-	 * VDD, the transition does not propagate
-	 */
-	if ((input == Input_A && input_b_transitions.back()->parameters.steepness > 0) ||
-	    (input == Input_B && input_a_transitions.back()->parameters.steepness > 0)) {
-		return;
-	}
-
-	/*
-	 * Check for cancellation
-	 * If the current transition happens before the most recent output transition,
-	 * this transition does not propagate and the most recent output transition is canceled.
-	 */
-	if (output_transitions.back()->parameters.shift > transition->parameters.shift) {
-		output_transitions.back()->cancelation = true;
-		return;
-	}
-
-	TransitionParameters generated_outp_tr_params = CaclulateSISParametersAtInput(transition->parameters, input);
-	std::shared_ptr<Transition> generated_outp_tr = std::shared_ptr<Transition>(new Transition);
+	// TODO: add check if the genereated output parameters are reasonable!
 	generated_outp_tr->parameters = generated_outp_tr_params;
-	generated_outp_tr->parents = {transition};
 	generated_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
 	generated_outp_tr->sinks = subscribers;
 
@@ -157,29 +166,85 @@ TransitionParameters NORGate::CaclulateSISParametersAtInput(TransitionParameters
 	}
 }
 
+TransitionParameters NORGate::CaclulateMISParameters(TransitionParameters current_input_tr) {
+	TransitionParameters input_a_params, input_b_params;
+	if (mis_parnter_input == Input_A) {
+		input_a_params = mis_partner->parameters;
+		input_b_params = current_input_tr;
+	} else {
+		input_a_params = current_input_tr;
+		input_b_params = mis_partner->parameters;
+	}
+
+	if (input_a_params.shift < input_b_params.shift) {
+		return transfer_functions->mis_input_a_first_rr->CalculatePropagation(
+		    {input_a_params,
+		     input_b_params,
+		     output_transitions.back()->parameters});
+	} else {
+		return transfer_functions->mis_input_b_first_rr->CalculatePropagation(
+		    {input_a_params,
+		     input_b_params,
+		     output_transitions.back()->parameters});
+	}
+}
+
 /*
- *	Check if transition if the other input also had a transition near to this
+ *	Check if transition of the other input also had a transition near to this
  * 	one. If yes, use MIS transfer functions to calculate the output transition.
  */
-bool NORGate::CheckIfMIS(const Transition& transition, Input input) {
-	double current_tr_shift = transition.parameters.shift;
+bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition, Input input) {
+	double current_tr_shift = transition->parameters.shift;
 	if (input == Input_A) {
 		auto latest_b_tr = input_b_transitions.back();
 		double latest_b_tr_shift = latest_b_tr->parameters.shift;
 		// TODO make the 1.0 configurable
-		if (current_tr_shift - latest_b_tr_shift < 1.0) {
+		if (current_tr_shift - latest_b_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_b_tr)) {
+			mis_partner = latest_b_tr;
+			mis_parnter_input = Input_B;
 			return true;
 		}
 	} else {
 		auto latest_a_tr = input_a_transitions.back();
 		double latest_a_tr_shift = latest_a_tr->parameters.shift;
 		// TODO make the 1.0 configurable
-		if (current_tr_shift - latest_a_tr_shift < 1.0) {
+		if (current_tr_shift - latest_a_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_a_tr)) {
+			mis_partner = latest_a_tr;
+			mis_parnter_input = Input_A;
 			return true;
 		}
 	}
 	return false;
 }
 
-NORGate::~NORGate() {
+/*
+ *	Return true if both transitions are falling or both are rising, false otherwise.
+ */
+bool NORGate::TransitionsSamePolarity(const std::shared_ptr<Transition>& transition1, const std::shared_ptr<Transition>& transition2) {
+	if ((transition1->parameters.steepness > 0 && transition2->parameters.steepness > 0) ||
+	    (transition1->parameters.steepness <= 0 && transition2->parameters.steepness <= 0)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/*
+ * Mark a transition and all its children as cancelled. If a transition gets cancelled that was 
+ * the part of a MIS propagation, we have to reschedule the other transitions of the MIS propgagation
+ * that did not get cancelled.
+ */
+void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
+	transition->cancelation = true;
+	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {
+		if ((*it)->is_MIS) {
+			// reschedule the parent transition which is not cancelled
+			if (!(*it)->parents.front()->cancelation) {
+				schedule->AddFutureTransition((*it)->parents.front());
+			} else if (!(*it)->parents.back()->cancelation) {
+				schedule->AddFutureTransition((*it)->parents.back());
+			}
+		}
+		CancelTransition(*it, schedule);
+	}
 }
