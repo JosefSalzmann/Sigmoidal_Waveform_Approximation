@@ -38,9 +38,6 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 		}
 	}
 	transition_schedule->SortFutureTransitions();
-
-	SimulateCircuit();
-	WriteNOROutputsToFile();
 }
 
 /*
