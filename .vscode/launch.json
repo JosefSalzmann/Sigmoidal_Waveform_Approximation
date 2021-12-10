@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${fileDirname}/../${fileBasenameNoExtension}",
             "args": [
-                "-c ../testing/test_data/tf_model_test.txt"
+                "-c./../benchmarking/benchmarking_circuit.txt"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

@@ -80,7 +80,7 @@ InitialValue NORGate::GetInitialOutputValue() {
  * Mark transitons as cancelled if cancelation happens.
  */
 void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
-	if (output_node_name.compare("OUT2") == 0) {
+	if (output_node_name.compare("OA_4") == 0 && transition->parameters.shift > 70) {
 		int debug = 0;
 	}
 	if (transition->cancelation) {
@@ -122,6 +122,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		*/
 		if (output_transitions.back()->parameters.shift > transition->parameters.shift) {
 			CancelTransition(output_transitions.back(), schedule);
+			output_transitions.pop_back();
 			return;
 		}
 
@@ -195,6 +196,10 @@ TransitionParameters NORGate::CaclulateMISParameters(TransitionParameters curren
  * 	one. If yes, use MIS transfer functions to calculate the output transition.
  */
 bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition, Input input) {
+	if (transition->parameters.steepness < 0) {
+		// TODO: until now only support MIS for both input rising
+		return false;
+	}
 	double current_tr_shift = transition->parameters.shift;
 	if (input == Input_A) {
 		auto latest_b_tr = input_b_transitions.back();
