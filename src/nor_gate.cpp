@@ -115,6 +115,11 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 			return;
 		}
 
+		// TODO: find better way to make sure that the last output transition was not cancelled
+		while (output_transitions.back()->cancelation) {
+			output_transitions.pop_back();
+		}
+
 		/*
 		* Check for cancelation
 		* If the current transition happens before the most recent output transition,
@@ -134,6 +139,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 	generated_outp_tr->parameters = generated_outp_tr_params;
 	generated_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
 	generated_outp_tr->sinks = subscribers;
+	transition->children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
 
 	schedule->AddFutureTransition(generated_outp_tr);
 	output_transitions.push_back(generated_outp_tr);
