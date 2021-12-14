@@ -125,7 +125,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		* If the current transition happens before the most recent output transition,
 		* this transition does not propagate and the most recent output transition is cancelled.
 		*/
-		if (output_transitions.back()->parameters.shift > transition->parameters.shift) {
+		if (output_transitions.back()->parameters.shift + 0.00 > transition->parameters.shift) {
 			CancelTransition(output_transitions.back(), schedule);
 			output_transitions.pop_back();
 			return;
@@ -207,11 +207,12 @@ bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition, Input in
 		return false;
 	}
 	double current_tr_shift = transition->parameters.shift;
+	auto latest_output_tr = output_transitions.back();
 	if (input == Input_A) {
 		auto latest_b_tr = input_b_transitions.back();
 		double latest_b_tr_shift = latest_b_tr->parameters.shift;
 		// TODO make the 1.0 configurable
-		if (current_tr_shift - latest_b_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_b_tr)) {
+		if (current_tr_shift - latest_b_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_b_tr) && latest_output_tr->parents[0] == latest_b_tr) {
 			mis_partner = latest_b_tr;
 			mis_parnter_input = Input_B;
 			return true;
@@ -220,7 +221,7 @@ bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition, Input in
 		auto latest_a_tr = input_a_transitions.back();
 		double latest_a_tr_shift = latest_a_tr->parameters.shift;
 		// TODO make the 1.0 configurable
-		if (current_tr_shift - latest_a_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_a_tr)) {
+		if (current_tr_shift - latest_a_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_a_tr) && latest_output_tr->parents[0] == latest_a_tr) {
 			mis_partner = latest_a_tr;
 			mis_parnter_input = Input_A;
 			return true;
