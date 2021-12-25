@@ -1,7 +1,7 @@
 CXX = g++
 # TODO change -g to -O3 in the end
 CXXFLAGS = -Wall -g
-LIBS = -L. -lcryptominisat5
+LIBS = -L. -lcryptominisat5 -I /usr/lib/libtensorflow2/include/ -ltensorflow -I /usr/lib/cppflow/include/ 
 
 SRC_DIR = ./src
 OBJ_DIR = ./obj
@@ -16,7 +16,8 @@ OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/polynomial_sis_transfer_function.o \
 		$(OBJ_DIR)/polynomial_mis_transfer_function.o \
 		$(OBJ_DIR)/gnd_potential.o \
-		$(OBJ_DIR)/vdd_potential.o
+		$(OBJ_DIR)/vdd_potential.o \
+		$(OBJ_DIR)/ann_sis_transfer_function.o
 
 $(MAIN): $(OBJS)
 	$(CXX) -o $@ $^ $(LIBS)
