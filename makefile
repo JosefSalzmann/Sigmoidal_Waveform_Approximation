@@ -1,7 +1,7 @@
 CXX = g++
 # TODO change -g to -O3 in the end
 CXXFLAGS = -Wall -g
-LIBS = -L. -lcryptominisat5 -I /usr/lib/libtensorflow2/include/ -ltensorflow -I /usr/lib/cppflow/include/ 
+LIBS = -L. -lcryptominisat5 -isystem libtensorflow2 -ltensorflow -isystem cppflow
 
 SRC_DIR = ./src
 OBJ_DIR = ./obj

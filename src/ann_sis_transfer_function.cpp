@@ -1,9 +1,9 @@
 #include "ann_sis_transfer_function.h"
 
-#include <iostream>
+#include <cppflow/model.h>
+#include <cppflow/ops.h>
 
-#include "/usr/lib/cppflow/include/cppflow/model.h"
-#include "/usr/lib/cppflow/include/cppflow/ops.h"
+#include <iostream>
 
 void ANNSISTransferFunction::ReadModel(const std::string& file_name) {
 	auto input = cppflow::tensor({2.0126f, 6.9102f, 7.2325f});
