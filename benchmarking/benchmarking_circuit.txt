@@ -72,9 +72,9 @@ OB_15
 O_MIS
 
 TRANSFERFUNCTIONS
-SIS_A_F POLY tfs/SIS_Input_A_falling.txt
-SIS_A_R POLY tfs/SIS_Input_A_rising.txt
-SIS_B_F POLY tfs/SIS_Input_B_falling.txt
-SIS_B_R POLY tfs/SIS_Input_B_rising.txt
+SIS_A_F ANN tfs/SIS_A_falling_model
+SIS_A_R ANN tfs/SIS_A_rising_model
+SIS_B_F ANN tfs/SIS_B_falling_model
+SIS_B_R ANN tfs/SIS_B_rising_model
 MIS_A_frist_RR POLY tfs/MIS_Input_A_first_rr.txt
 MIS_B_frist_RR POLY tfs/MIS_Input_B_first_rr.txt
