@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 
+#include "ann_sis_transfer_function.h"
 #include "circuit_file_parser.h"
 #include "nor_gate.h"
 #include "polynomial_mis_transfer_function.h"
@@ -312,14 +313,19 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 		}
 		transfer_function->ReadModel(sis_transfer_function.file_name);
 
+	} else if (tf_approach.compare("ANN") == 0) {
+		if (model_type == SIS) {
+			transfer_function = std::make_shared<ANNSISTransferFunction>();
+		} else {
+			std::cerr << "ANN MSI not yet supported." << std::endl;
+			throw std::exception();
+		}
+		transfer_function->ReadModel(sis_transfer_function.file_name);
 	} else {
 		std::cerr << "Unknown transfer functions approach: " << sis_transfer_function.tf_approach << std::endl;
 		throw std::exception();
 	}
-	// TODO: add other tf approaches
-	// else if (tf_approach.compare("ANN") == 0) {
-	// } else if (tf_approach.compare("LUT") == 0) {
-	// }
+
 	return transfer_function;
 }
 

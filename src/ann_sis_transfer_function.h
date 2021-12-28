@@ -4,12 +4,15 @@
 #ifndef ANN_SIS_TRANSFER_FUNCTION_H
 #define ANN_SIS_TRANSFER_FUNCTION_H
 
+#include <cppflow/model.h>
+#include <cppflow/ops.h>
+
 #include "nor_gate.h"
 
 class ANNSISTransferFunction : public TransferFunction {
    private:
-	std::vector<double> steepness_tf_coeffs;
-	std::vector<double> shift_tf_coeffs;
+	std::unique_ptr<cppflow::model> steepness_model;
+	std::unique_ptr<cppflow::model> shift_model;
 	TransitionParameters default_prev_tr;
 	double MAX_TIME_SHIFT;
 	int model_degree;
