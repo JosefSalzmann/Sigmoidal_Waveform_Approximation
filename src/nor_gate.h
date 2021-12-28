@@ -111,6 +111,8 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 	void CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule);
 	TransitionParameters CaclulateSISParametersAtInput(TransitionParameters current_input_tr, Input input);
 	TransitionParameters CaclulateMISParameters(TransitionParameters current_input_tr);
+	double CalculatePulseValue(double vdd, double x, TransitionParameters transition1, TransitionParameters transition2);
+	bool CheckCancelation(TransitionParameters transition1, TransitionParameters transition2);
 
    public:
 	NORGate(){};
