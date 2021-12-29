@@ -353,8 +353,10 @@ void CircuitSimulator::WriteNOROutputsToFile() {
 				auto output_transitions = (*nor_gate)->GetOutputTransitions();
 				std::stringstream ss;
 				for (auto tr = output_transitions.begin() + 1; tr != output_transitions.end(); tr++) {
-					ss << std::fixed << std::setprecision(5) << (*tr)->parameters.steepness << ",";
-					ss << std::fixed << std::setprecision(5) << (*tr)->parameters.shift << std::endl;
+					if (!(*tr)->cancelation) {
+						ss << std::fixed << std::setprecision(5) << (*tr)->parameters.steepness << ",";
+						ss << std::fixed << std::setprecision(5) << (*tr)->parameters.shift << std::endl;
+					}
 				}
 				output_file << ss.str() << std::endl;
 			}

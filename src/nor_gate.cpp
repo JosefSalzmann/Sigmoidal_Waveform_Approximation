@@ -79,22 +79,47 @@ InitialValue NORGate::GetInitialOutputValue() {
  * Mark transitons as canceled if cancelation happens.
  */
 void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
-	if (output_node_name.compare("OB_2") == 0 && transition->parameters.shift > 0) {
+	if (output_node_name.compare("OA_9") == 0 && transition->parameters.shift > 102) {
 		int debug = 0;
 	}
-	std::cout << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
-	          << " at Gate " << this->gate_name << "." << std::endl;
 
 	if (transition->cancelation) {
 		return;
 	}
 
-	// TODO: find better way to remove canceled transitions from inputs
-	if (input_a_transitions.back()->cancelation) {
-		input_a_transitions.pop_back();
+	std::cout << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	          << " at Gate " << this->gate_name << "." << std::endl;
+
+	std::shared_ptr<Transition> latest_valid_input_a_tr;
+	std::shared_ptr<Transition> latest_valid_input_b_tr;
+	std::shared_ptr<Transition> latest_valid_output_tr;
+	std::shared_ptr<Transition> second_latest_valid_output_tr;
+
+	for (auto it = input_a_transitions.rbegin(); it != input_a_transitions.rend(); it++) {
+		if (!(*it)->cancelation) {
+			latest_valid_input_a_tr = *it;
+			break;
+		}
 	}
-	if (input_b_transitions.back()->cancelation) {
-		input_b_transitions.pop_back();
+
+	for (auto it = input_b_transitions.rbegin(); it != input_b_transitions.rend(); it++) {
+		if (!(*it)->cancelation) {
+			latest_valid_input_b_tr = *it;
+			break;
+		}
+	}
+
+	bool latest_v_out_tr_found = false;
+	for (auto it = output_transitions.rbegin(); it != output_transitions.rend(); it++) {
+		if (!(*it)->cancelation) {
+			if (!latest_v_out_tr_found) {
+				latest_valid_output_tr = *it;
+				latest_v_out_tr_found = true;
+			} else {
+				second_latest_valid_output_tr = *it;
+				break;
+			}
+		}
 	}
 
 	if (input == Input_A) {
@@ -105,13 +130,14 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 
 	TransitionParameters generated_outp_tr_params;
 	std::shared_ptr<Transition> generated_outp_tr = std::shared_ptr<Transition>(new Transition);
-	bool mis = CheckIfMIS(transition, input);
+	bool mis = CheckIfMIS(transition, latest_valid_output_tr, latest_valid_input_a_tr, latest_valid_input_b_tr, input);
 	if (mis) {
 		// do MIS stuff
 		// throw away the last output transition, since it gets overwritten now.
-		output_transitions.pop_back();
 
-		generated_outp_tr_params = CaclulateMISParameters(transition->parameters);
+		//output_transitions.pop_back();
+
+		generated_outp_tr_params = CaclulateMISParameters(second_latest_valid_output_tr->parameters, transition->parameters);
 		generated_outp_tr->parents = {transition, mis_partner};
 		generated_outp_tr->is_MIS = true;
 	} else {
@@ -120,44 +146,43 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		/* if the last transition of the other input was rising i.e. other input is now at
 		* VDD, the transition does not propagate
 		*/
-		if ((input == Input_A && input_b_transitions.back()->parameters.steepness > 0) ||
-		    (input == Input_B && input_a_transitions.back()->parameters.steepness > 0)) {
+		if ((input == Input_A && latest_valid_input_b_tr->parameters.steepness > 0) ||
+		    (input == Input_B && latest_valid_input_a_tr->parameters.steepness > 0)) {
 			return;
 		}
 
 		// TODO: find better way to make sure that the last output transition was not canceled
-		while (output_transitions.back()->cancelation) {
-			output_transitions.pop_back();
-		}
+		// while (output_transitions.back()->cancelation) {
+		// 	output_transitions.pop_back();
+		// }
 
-		generated_outp_tr_params = CaclulateSISParametersAtInput(transition->parameters, input);
+		generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
 		generated_outp_tr->parents = {transition};
-
-		/*
-		* Check for cancelation
-		*/
-		if (CheckCancelation(output_transitions.back()->parameters, generated_outp_tr_params)) {
-			if (output_node_name.compare("OB_2") == 0 && transition->parameters.shift > 0) {
-				int debug = 0;
-			}
-			std::cout << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-			          << " at Gate " << this->gate_name << ". but gets canceled" << std::endl;
-			std::cout << "Canceled Transition: " << std::to_string(output_transitions.back()->parameters.steepness) << "," << std::to_string(output_transitions.back()->parameters.shift)
-			          << " at Gate " << this->gate_name << "." << std::endl;
-			CancelTransition(output_transitions.back(), schedule);
-			output_transitions.pop_back();
-			return;
-		}
 	}
-
-	std::cout << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-	          << " at Gate " << this->gate_name << "." << std::endl;
 
 	// TODO: add check if the genereated output parameters are reasonable!
 	generated_outp_tr->parameters = generated_outp_tr_params;
 	generated_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
 	generated_outp_tr->sinks = subscribers;
 	transition->children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
+
+	/*
+	* Check for cancelation
+	*/
+	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
+		if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
+			int debug = 0;
+		}
+		std::cout << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		          << " at Gate " << this->gate_name << ". but gets canceled" << std::endl;
+		CancelTransition(latest_valid_output_tr, schedule);
+		generated_outp_tr->cancelation = true;
+		generated_outp_tr->is_responsible_for_cancelation = true;
+		generated_outp_tr->cancels_tr = latest_valid_output_tr;
+	} else {
+		std::cout << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		          << " at Gate " << this->gate_name << "." << std::endl;
+	}
 
 	schedule->AddFutureTransition(generated_outp_tr);
 	output_transitions.push_back(generated_outp_tr);
@@ -167,8 +192,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
  *	Calculate the output parameters of the output transition cause by current_input_tr
  * 	by using the appropriate SIS transfer function, i.e. right input and right polarity.
  */
-TransitionParameters NORGate::CaclulateSISParametersAtInput(TransitionParameters current_input_tr, Input input) {
-	TransitionParameters prev_outp_tr = output_transitions.back()->parameters;
+TransitionParameters NORGate::CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input) {
 	if (input == Input_A) {
 		if (current_input_tr.steepness > 0) {
 			// rising transition at input A
@@ -192,7 +216,7 @@ TransitionParameters NORGate::CaclulateSISParametersAtInput(TransitionParameters
 	}
 }
 
-TransitionParameters NORGate::CaclulateMISParameters(TransitionParameters current_input_tr) {
+TransitionParameters NORGate::CaclulateMISParameters(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr) {
 	TransitionParameters input_a_params, input_b_params;
 	if (mis_parnter_input == Input_A) {
 		input_a_params = mis_partner->parameters;
@@ -206,12 +230,12 @@ TransitionParameters NORGate::CaclulateMISParameters(TransitionParameters curren
 		return transfer_functions->mis_input_a_first_rr->CalculatePropagation(
 		    {input_a_params,
 		     input_b_params,
-		     output_transitions.back()->parameters});
+		     prev_outp_tr});
 	} else {
 		return transfer_functions->mis_input_b_first_rr->CalculatePropagation(
 		    {input_a_params,
 		     input_b_params,
-		     output_transitions.back()->parameters});
+		     prev_outp_tr});
 	}
 }
 
@@ -219,15 +243,16 @@ TransitionParameters NORGate::CaclulateMISParameters(TransitionParameters curren
  *	Check if transition of the other input also had a transition near to this
  * 	one. If yes, use MIS transfer functions to calculate the output transition.
  */
-bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition, Input input) {
+bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition,
+                         const std::shared_ptr<Transition>& latest_output_tr,
+                         const std::shared_ptr<Transition>& latest_a_tr,
+                         const std::shared_ptr<Transition>& latest_b_tr, Input input) {
 	if (transition->parameters.steepness < 0) {
 		// TODO: until now only support MIS for both input rising
 		return false;
 	}
 	double current_tr_shift = transition->parameters.shift;
-	auto latest_output_tr = output_transitions.back();
 	if (input == Input_A) {
-		auto latest_b_tr = input_b_transitions.back();
 		double latest_b_tr_shift = latest_b_tr->parameters.shift;
 		// TODO make the 1.0 configurable
 		if (current_tr_shift - latest_b_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_b_tr) && latest_output_tr->parents[0] == latest_b_tr) {
@@ -236,7 +261,6 @@ bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition, Input in
 			return true;
 		}
 	} else {
-		auto latest_a_tr = input_a_transitions.back();
 		double latest_a_tr_shift = latest_a_tr->parameters.shift;
 		// TODO make the 1.0 configurable
 		if (current_tr_shift - latest_a_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_a_tr) && latest_output_tr->parents[0] == latest_a_tr) {
@@ -266,6 +290,11 @@ bool NORGate::TransitionsSamePolarity(const std::shared_ptr<Transition>& transit
  * that did not get canceled.
  */
 void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
+	std::cout << "Canceled Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	          << " at Gate " << transition->source->GetOutputName() << "." << std::endl;
+	if (transition->is_responsible_for_cancelation) {
+		transition->cancels_tr->cancelation = false;
+	}
 	transition->cancelation = true;
 	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {
 		if ((*it)->is_MIS) {
@@ -297,6 +326,9 @@ double NORGate::CalculatePulseValue(double vdd, double x, TransitionParameters t
  * two transitions. If the maximum/minimum is smaller/greater than Vdd/2 they cancel each other.
  */
 bool NORGate::CheckCancelation(TransitionParameters transition1, TransitionParameters transition2) {
+	if (abs(transition1.shift - transition2.shift) < 0.2) {
+		return true;
+	}
 	double vdd = 1.2;
 	int n_points = 20;
 	double test_points[n_points];

@@ -55,7 +55,9 @@ struct Transition {
 	std::vector<std::shared_ptr<Transition>> parents;  // one parent for SIS, two parents for MIS
 	std::vector<std::shared_ptr<Transition>> children;
 	bool cancelation = false;
-	bool is_MIS = false;  // true if transition was propagated using MIS transfer functions
+	bool is_responsible_for_cancelation = false;
+	std::shared_ptr<Transition> cancels_tr;  // transition that gets canceled by this transition
+	bool is_MIS = false;                     // true if transition was propagated using MIS transfer functions
 };
 
 enum TFModelType {
@@ -106,11 +108,14 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 	std::shared_ptr<Transition> mis_partner;
 	Input mis_parnter_input;
 
-	bool CheckIfMIS(const std::shared_ptr<Transition>&, Input input);
+	bool CheckIfMIS(const std::shared_ptr<Transition>& transition,
+	                const std::shared_ptr<Transition>& latest_output_tr,
+	                const std::shared_ptr<Transition>& latest_a_tr,
+	                const std::shared_ptr<Transition>& latest_b_tr, Input input);
 	bool TransitionsSamePolarity(const std::shared_ptr<Transition>& transition1, const std::shared_ptr<Transition>& transition2);
 	void CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule);
-	TransitionParameters CaclulateSISParametersAtInput(TransitionParameters current_input_tr, Input input);
-	TransitionParameters CaclulateMISParameters(TransitionParameters current_input_tr);
+	TransitionParameters CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input);
+	TransitionParameters CaclulateMISParameters(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr);
 	double CalculatePulseValue(double vdd, double x, TransitionParameters transition1, TransitionParameters transition2);
 	bool CheckCancelation(TransitionParameters transition1, TransitionParameters transition2);
 
