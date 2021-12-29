@@ -147,7 +147,6 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 	void RemoveOutputTransition(std::shared_ptr<Transition> transition);
 	void RemoveInputTransition(std::shared_ptr<Transition> transition, Input input);
 	void PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
-	static bool NORGateSorter(const NORGate& lhs, const NORGate& rhs);
 	std::shared_ptr<TransitionSource>& GetInputSource(Input input);
 };
 

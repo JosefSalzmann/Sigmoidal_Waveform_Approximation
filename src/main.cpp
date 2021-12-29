@@ -5,7 +5,7 @@
 
 #include "circuit_simulator.h"
 
-void Usage(std::string prog_name) {
+void Usage(const std::string& prog_name) {
 	std::cout << prog_name << " [Options]" << std::endl
 	          << "Options:" << std::endl
 	          << "-h	Print this message" << std::endl

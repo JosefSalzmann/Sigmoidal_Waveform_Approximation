@@ -70,10 +70,6 @@ std::string NORGate::GetOutputName() {
 	return output_node_name;
 }
 
-bool NORGate::NORGateSorter(const NORGate& lhs, const NORGate& rhs) {
-	return lhs.gate_name < rhs.gate_name;
-}
-
 InitialValue NORGate::GetInitialOutputValue() {
 	return initial_value_output;
 }
@@ -83,9 +79,12 @@ InitialValue NORGate::GetInitialOutputValue() {
  * Mark transitons as cancelled if cancelation happens.
  */
 void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
-	if (output_node_name.compare("OA_4") == 0 && transition->parameters.shift > 70) {
+	if (output_node_name.compare("OB_2") == 0 && transition->parameters.shift > 0) {
 		int debug = 0;
 	}
+	std::cout << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	          << " at Gate " << this->gate_name << "." << std::endl;
+
 	if (transition->cancelation) {
 		return;
 	}
@@ -141,11 +140,16 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 			if (output_node_name.compare("OB_2") == 0 && transition->parameters.shift > 0) {
 				int debug = 0;
 			}
+			std::cout << "Canceled Transition: " << std::to_string(output_transitions.back()->parameters.steepness) << "," << std::to_string(output_transitions.back()->parameters.shift)
+			          << " at Gate " << this->gate_name << "." << std::endl;
 			CancelTransition(output_transitions.back(), schedule);
 			output_transitions.pop_back();
 			return;
 		}
 	}
+
+	std::cout << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+	          << " at Gate " << this->gate_name << "." << std::endl;
 
 	// TODO: add check if the genereated output parameters are reasonable!
 	generated_outp_tr->parameters = generated_outp_tr_params;
