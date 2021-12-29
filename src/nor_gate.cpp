@@ -76,7 +76,7 @@ InitialValue NORGate::GetInitialOutputValue() {
 
 /*
  * Propgate a transition and register the newly created transition in the schedule.
- * Mark transitons as cancelled if cancelation happens.
+ * Mark transitons as canceled if cancelation happens.
  */
 void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
 	if (output_node_name.compare("OB_2") == 0 && transition->parameters.shift > 0) {
@@ -89,7 +89,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		return;
 	}
 
-	// TODO: find better way to remove cancelled transitions from inputs
+	// TODO: find better way to remove canceled transitions from inputs
 	if (input_a_transitions.back()->cancelation) {
 		input_a_transitions.pop_back();
 	}
@@ -125,7 +125,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 			return;
 		}
 
-		// TODO: find better way to make sure that the last output transition was not cancelled
+		// TODO: find better way to make sure that the last output transition was not canceled
 		while (output_transitions.back()->cancelation) {
 			output_transitions.pop_back();
 		}
@@ -140,9 +140,12 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 			if (output_node_name.compare("OB_2") == 0 && transition->parameters.shift > 0) {
 				int debug = 0;
 			}
+			std::cout << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+			          << " at Gate " << this->gate_name << ". but gets canceled" << std::endl;
 			std::cout << "Canceled Transition: " << std::to_string(output_transitions.back()->parameters.steepness) << "," << std::to_string(output_transitions.back()->parameters.shift)
 			          << " at Gate " << this->gate_name << "." << std::endl;
 			CancelTransition(output_transitions.back(), schedule);
+			transition->cancels_tr = output_transitions.back();
 			output_transitions.pop_back();
 			return;
 		}
@@ -259,15 +262,15 @@ bool NORGate::TransitionsSamePolarity(const std::shared_ptr<Transition>& transit
 }
 
 /*
- * Mark a transition and all its children as cancelled. If a transition gets cancelled that was 
+ * Mark a transition and all its children as canceled. If a transition gets canceled that was 
  * the part of a MIS propagation, we have to reschedule the other transitions of the MIS propgagation
- * that did not get cancelled.
+ * that did not get canceled.
  */
 void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
 	transition->cancelation = true;
 	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {
 		if ((*it)->is_MIS) {
-			// reschedule the parent transition which is not cancelled
+			// reschedule the parent transition which is not canceled
 			if (!(*it)->parents.front()->cancelation) {
 				schedule->AddFutureTransition((*it)->parents.front());
 			} else if (!(*it)->parents.back()->cancelation) {
@@ -314,7 +317,7 @@ bool NORGate::CheckCancelation(TransitionParameters transition1, TransitionParam
 				max_value = test_points[i];
 			}
 		}
-		if (max_value < vdd / 2) {
+		if (max_value < vdd / 4) {
 			return true;
 		}
 	} else {  //search for the minimum value of the testpoints
@@ -324,7 +327,7 @@ bool NORGate::CheckCancelation(TransitionParameters transition1, TransitionParam
 				min_value = test_points[i];
 			}
 		}
-		if (min_value > vdd / 2) {
+		if (min_value > vdd * 3 / 4) {
 			return true;
 		}
 	}
