@@ -145,7 +145,6 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 			std::cout << "Canceled Transition: " << std::to_string(output_transitions.back()->parameters.steepness) << "," << std::to_string(output_transitions.back()->parameters.shift)
 			          << " at Gate " << this->gate_name << "." << std::endl;
 			CancelTransition(output_transitions.back(), schedule);
-			transition->cancels_tr = output_transitions.back();
 			output_transitions.pop_back();
 			return;
 		}
