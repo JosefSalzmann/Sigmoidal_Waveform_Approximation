@@ -239,7 +239,6 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 
 	bool solvable = solver.solve() == CMSat::l_True;
 	if (!solvable) {
-		// TODO: report that no initial assignment can be found
 		std::cerr << "Circuit initial values cannot be computed" << std::endl;
 		throw std::exception();
 	}
@@ -344,7 +343,7 @@ void CircuitSimulator::SimulateCircuit() {
 void CircuitSimulator::WriteNOROutputsToFile() {
 	std::ofstream output_file;
 	output_file.open("output.txt");
-	// TODO: sanitfy check output names
+	// TODO: sanity check output names
 	auto parsed_outputs = parser.GetOutputs();
 	for (auto it = parsed_outputs.begin(); it != parsed_outputs.end(); it++) {
 		std::string output_name = it->node_name;

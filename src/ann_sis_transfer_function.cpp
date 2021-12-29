@@ -49,7 +49,6 @@ TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vec
 	output_shift = (output_shift < 0) ? 0 : output_shift;
 
 	return {output_steepness, current_inp_tr.shift + output_shift};
-	// return {};
 }
 void ANNSISTransferFunction::SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) {
 	MAX_TIME_SHIFT = maximal_shift;
