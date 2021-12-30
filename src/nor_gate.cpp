@@ -136,6 +136,8 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		// throw away the last output transition, since it gets overwritten now.
 
 		//output_transitions.pop_back();
+		latest_valid_output_tr->cancelation = true;
+		CancelTransition(latest_valid_output_tr, schedule);
 
 		generated_outp_tr_params = CaclulateMISParameters(second_latest_valid_output_tr->parameters, transition->parameters);
 		generated_outp_tr->parents = {transition, mis_partner};
@@ -169,13 +171,18 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 	/*
 	* Check for cancelation
 	*/
-	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
+	if (!mis && CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
 		if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
 			int debug = 0;
 		}
 		std::cout << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
 		          << " at Gate " << this->gate_name << ". but gets canceled" << std::endl;
 		CancelTransition(latest_valid_output_tr, schedule);
+		generated_outp_tr->cancelation = true;
+		generated_outp_tr->is_responsible_for_cancelation = true;
+		generated_outp_tr->cancels_tr = latest_valid_output_tr;
+	} else if (mis && CheckCancelation(second_latest_valid_output_tr->parameters, generated_outp_tr_params)) {
+		CancelTransition(second_latest_valid_output_tr, schedule);
 		generated_outp_tr->cancelation = true;
 		generated_outp_tr->is_responsible_for_cancelation = true;
 		generated_outp_tr->cancels_tr = latest_valid_output_tr;
@@ -294,6 +301,9 @@ void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, co
 	          << " at Gate " << transition->source->GetOutputName() << "." << std::endl;
 	if (transition->is_responsible_for_cancelation) {
 		transition->cancels_tr->cancelation = false;
+		std::cout << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
+		          << " at Gate " << transition->cancels_tr->source->GetOutputName() << "." << std::endl;
+		schedule->AddFutureTransition(transition->cancels_tr);
 	}
 	transition->cancelation = true;
 	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {
@@ -348,7 +358,7 @@ bool NORGate::CheckCancelation(TransitionParameters transition1, TransitionParam
 				max_value = test_points[i];
 			}
 		}
-		if (max_value < vdd / 4) {
+		if (max_value < vdd / 2) {
 			return true;
 		}
 	} else {  //search for the minimum value of the testpoints
@@ -358,7 +368,7 @@ bool NORGate::CheckCancelation(TransitionParameters transition1, TransitionParam
 				min_value = test_points[i];
 			}
 		}
-		if (min_value > vdd * 3 / 4) {
+		if (min_value > vdd / 2) {
 			return true;
 		}
 	}
