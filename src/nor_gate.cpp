@@ -336,9 +336,6 @@ double NORGate::CalculatePulseValue(double vdd, double x, TransitionParameters t
  * two transitions. If the maximum/minimum is smaller/greater than Vdd/2 they cancel each other.
  */
 bool NORGate::CheckCancelation(TransitionParameters transition1, TransitionParameters transition2) {
-	if (abs(transition1.shift - transition2.shift) < 0.2) {
-		return true;
-	}
 	double vdd = 1.2;
 	int n_points = 20;
 	double test_points[n_points];
