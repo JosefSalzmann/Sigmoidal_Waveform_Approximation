@@ -1,5 +1,6 @@
 #include <getopt.h>
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 
@@ -35,8 +36,16 @@ int main(int argc, char* argv[]) {
 	} catch (const std::exception& e) {
 		return -1;
 	}
+
+	auto simulation_start = std::chrono::high_resolution_clock::now();
+
 	simulator.SimulateCircuit();
 	simulator.WriteNOROutputsToFile();
+
+	auto simulation_stop = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> duration_double = simulation_stop - simulation_start;
+	std::cerr << std::endl
+	          << "Simulation took " << duration_double.count() << "ms" << std::endl;
 
 	return 0;
 }
