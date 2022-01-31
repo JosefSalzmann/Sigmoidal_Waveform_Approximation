@@ -1,4 +1,6 @@
 #include <getopt.h>
+#include <plog/Initializers/RollingFileInitializer.h>
+#include <plog/Log.h>
 
 #include <chrono>
 #include <fstream>
@@ -14,6 +16,7 @@ void Usage(const std::string& prog_name) {
 }
 
 int main(int argc, char* argv[]) {
+	plog::init(plog::debug, "efficient_mis_modelling.log");
 	std::string file_name;
 	while (true) {
 		switch (getopt(argc, argv, "c:h")) {

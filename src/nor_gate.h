@@ -136,7 +136,8 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 	                                           subscribers{},
 	                                           transfer_functions{transfer_functions},
 	                                           default_falling_tr{std::make_shared<Transition>()},
-	                                           default_rising_tr{std::make_shared<Transition>()} {
+	                                           default_rising_tr{std::make_shared<Transition>()},
+	                                           mis_parnter_input{Input_A} {
 		default_falling_tr->parameters.steepness = default_falling_steepness;
 		default_falling_tr->parameters.shift = -DBL_MAX;
 		default_rising_tr->parameters.steepness = default_rising_steepness;

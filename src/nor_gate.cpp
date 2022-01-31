@@ -2,6 +2,7 @@
 #include "nor_gate.h"
 
 #include <math.h>
+#include <plog/Log.h>
 
 #include <iostream>
 #include <string>
@@ -87,8 +88,8 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		return;
 	}
 
-	std::cout << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
-	          << " at Gate " << this->gate_name << "." << std::endl;
+	PLOG_DEBUG << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	           << " at Gate " << this->gate_name;
 
 	std::shared_ptr<Transition> latest_valid_input_a_tr;
 	std::shared_ptr<Transition> latest_valid_input_b_tr;
@@ -175,8 +176,8 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
 			int debug = 0;
 		}
-		std::cout << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-		          << " at Gate " << this->gate_name << ". but gets canceled" << std::endl;
+		PLOG_DEBUG << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		           << " at Gate " << this->gate_name;
 		CancelTransition(latest_valid_output_tr, schedule);
 		generated_outp_tr->cancelation = true;
 		generated_outp_tr->is_responsible_for_cancelation = true;
@@ -187,8 +188,8 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 		generated_outp_tr->is_responsible_for_cancelation = true;
 		generated_outp_tr->cancels_tr = latest_valid_output_tr;
 	} else {
-		std::cout << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-		          << " at Gate " << this->gate_name << "." << std::endl;
+		PLOG_DEBUG << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		           << " at Gate " << this->gate_name;
 	}
 
 	schedule->AddFutureTransition(generated_outp_tr);
@@ -297,12 +298,12 @@ bool NORGate::TransitionsSamePolarity(const std::shared_ptr<Transition>& transit
  * that did not get canceled.
  */
 void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
-	std::cout << "Canceled Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
-	          << " at Gate " << transition->source->GetOutputName() << "." << std::endl;
+	PLOG_DEBUG << "Canceled Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	           << " at Gate " << transition->source->GetOutputName();
 	if (transition->is_responsible_for_cancelation) {
 		transition->cancels_tr->cancelation = false;
-		std::cout << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
-		          << " at Gate " << transition->cancels_tr->source->GetOutputName() << "." << std::endl;
+		PLOG_DEBUG << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
+		           << " at Gate " << transition->cancels_tr->source->GetOutputName();
 		schedule->AddFutureTransition(transition->cancels_tr);
 	}
 	transition->cancelation = true;
