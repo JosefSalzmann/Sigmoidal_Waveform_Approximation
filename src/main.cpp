@@ -16,7 +16,6 @@ void Usage(const std::string& prog_name) {
 }
 
 int main(int argc, char* argv[]) {
-	plog::init(plog::debug, "efficient_mis_modelling.log");
 	std::string file_name;
 	while (true) {
 		switch (getopt(argc, argv, "c:h")) {
@@ -33,6 +32,7 @@ int main(int argc, char* argv[]) {
 		break;
 	}
 
+	plog::init(plog::debug, "efficient_mis_modelling.log");
 	CircuitSimulator simulator = CircuitSimulator();
 	try {
 		simulator.InitializeCircuit(file_name);
