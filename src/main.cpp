@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "circuit_simulator.h"
+#include "pcl_test.h"
 
 void Usage(const std::string& prog_name) {
 	std::cout << prog_name << " [Options]" << std::endl
@@ -16,6 +17,8 @@ void Usage(const std::string& prog_name) {
 }
 
 int main(int argc, char* argv[]) {
+	PCLTest pcl_test;
+	pcl_test.test();
 	std::string file_name;
 	while (true) {
 		switch (getopt(argc, argv, "c:h")) {

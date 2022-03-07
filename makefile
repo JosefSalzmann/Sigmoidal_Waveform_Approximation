@@ -1,6 +1,6 @@
 CXX = g++
 # TODO change -g to -O3 in the end
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -g -I/usr/include/pcl-1.10 -I/usr/include/eigen3
 LIBS = -L. -lcryptominisat5 -isystem libtensorflow2 -ltensorflow -isystem cppflow
 
 SRC_DIR = ./src
@@ -17,6 +17,7 @@ OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/polynomial_mis_transfer_function.o \
 		$(OBJ_DIR)/gnd_potential.o \
 		$(OBJ_DIR)/vdd_potential.o \
+		$(OBJ_DIR)/pcl_test.o \
 		$(OBJ_DIR)/ann_sis_transfer_function.o
 
 $(MAIN): $(OBJS)
