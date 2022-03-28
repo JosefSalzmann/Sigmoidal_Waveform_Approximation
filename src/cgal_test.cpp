@@ -4,6 +4,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Point_set_3.h>
 #include <CGAL/Point_set_3/IO.h>
+#include <CGAL/Polygon_mesh_processing/locate.h>
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Scale_space_reconstruction_3/Advancing_front_mesher.h>
 #include <CGAL/Scale_space_reconstruction_3/Jet_smoother.h>
@@ -57,7 +58,7 @@ int CGALTest::test() {
 	// std::cout << points.number_of_removed_points()
 	//           << " point(s) removed after simplification." << std::endl;
 	// points.collect_garbage();
-	CGAL::jet_smooth_point_set<CGAL::Sequential_tag>(points, 24);
+	// CGAL::jet_smooth_point_set<CGAL::Sequential_tag>(points, 24);
 	int reconstruction_choice = 1;
 	if (reconstruction_choice == 0 || reconstruction_choice == -1)  // Poisson
 	{
@@ -92,6 +93,18 @@ int CGALTest::test() {
 		CGAL::Polygon_mesh_processing::polygon_soup_to_polygon_mesh(vertices, facets, output_mesh);
 		std::ofstream f("out_af.off");
 		f << output_mesh;
+		auto mypoint = Point_3(0, 0, 0);
+		auto location = CGAL::Polygon_mesh_processing::locate(mypoint, output_mesh);
+		// f << mypoint.x() << std::endl;
+		// f << mypoint.y() << std::endl;
+		// f << mypoint.z() << std::endl;
+		f << location.second[0] << std::endl;
+		f << location.second[1] << std::endl;
+		f << location.second[2] << std::endl;
+		f << location.first << std::endl;
+
+		// location.first.i
+		// output_mesh.f
 		f.close();
 	} else if (reconstruction_choice == 2 || reconstruction_choice == -1)  // Scale space
 	{
