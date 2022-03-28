@@ -24,7 +24,7 @@ void PCLTest::test() {
 	pcl::ConcaveHull<pcl::PointXYZ> chull;
 	std::vector<pcl::Vertices> polygons;
 	chull.setInputCloud(cloud);
-	chull.setAlpha(5);
+	chull.setAlpha(1);
 	chull.reconstruct(*cloud_hull, polygons);
 
 	std::cerr << "Concave hull has: " << cloud_hull->size()
