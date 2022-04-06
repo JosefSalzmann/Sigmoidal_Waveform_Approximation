@@ -3,11 +3,15 @@
 // #include <CGAL/Advancing_front_surface_reconstruction.h>
 #include <CGAL/Aff_transformation_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/IO/OFF.h>
+// #include <CGAL/IO/OFF.h>
+#include <CGAL/IO/OFF_reader.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
 #include <CGAL/Point_set_3.h>
 #include <CGAL/Point_set_3/IO.h>
 #include <CGAL/Polygon_mesh_processing/distance.h>
 #include <CGAL/Polygon_mesh_processing/locate.h>
+#include <CGAL/Polygon_mesh_processing/orient_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/remesh.h>
 #include <CGAL/Polygon_mesh_processing/transform.h>
@@ -15,7 +19,9 @@
 #include <CGAL/Scale_space_reconstruction_3/Advancing_front_mesher.h>
 #include <CGAL/Scale_space_reconstruction_3/Jet_smoother.h>
 #include <CGAL/Scale_space_surface_reconstruction_3.h>
+#include <CGAL/Side_of_triangle_mesh.h>
 #include <CGAL/Surface_mesh.h>
+#include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
 #include <CGAL/grid_simplify_point_set.h>
 #include <CGAL/jet_estimate_normals.h>
 #include <CGAL/jet_smooth_point_set.h>
@@ -23,6 +29,7 @@
 #include <CGAL/poisson_surface_reconstruction.h>
 #include <CGAL/remove_outliers.h>
 
+#include <boost/range/empty.hpp>
 #include <cstdlib>
 #include <fstream>
 #include <vector>
@@ -44,20 +51,44 @@ int CGALTest::test() {
 	Point_set points;
 	// std::string fname = CGAL::data_file_path("points_3/kitten.xyz");
 	CGAL::Surface_mesh<Point_3> test_mash;
-	CGAL::IO::read_PLY("falling_input.ply", test_mash);
-	std::cout << test_mash.vertices().size() << std::endl;
-	std::cout << test_mash.faces().size() << std::endl;
+	std::vector<Kernel::Point_3> points;
+	std::vector<std::vector<std::size_t>> polygons;
+	CGAL::IO::read_OFF("falling_input.off", points, polygons);
+	CGAL::Polygon_mesh_processing::orient_polygon_soup(points, polygons);
+	// CGAL::Polygon_mesh_processing::polygon_soup_to_polygon_mesh(points, polygons, test_mash);
 
-	auto mypoint = Point_3(0.1675039976835251, -4.367179870605469, -10.25990009307861);
+	std::cout << "Number of vertices: " << test_mash.vertices().size()
+	          << ", Number of faces: " << test_mash.faces().size() << std::endl;
+
+	auto mypoint = Point_3(1.0891, -12.7, -10.357);
 	auto location = CGAL::Polygon_mesh_processing::locate(mypoint, test_mash);
+	auto location_point = CGAL::Polygon_mesh_processing::construct_point(location, test_mash);
 	std::ofstream f("out_af.off");
-	// f << mypoint.x() << std::endl;
-	// f << mypoint.y() << std::endl;
-	// f << mypoint.z() << std::endl;
-	f << location.second[0] << std::endl;
-	f << location.second[1] << std::endl;
-	f << location.second[2] << std::endl;
-	f << location.first << std::endl;
+	f << "x: " << location_point.x() << std::endl;
+	f << "y: " << location_point.y() << std::endl;
+	f << "z: " << location_point.z() << std::endl;
+
+	typedef typename boost::graph_traits<CGAL::Surface_mesh<Point_3>>::halfedge_descriptor halfedge_descriptor;
+	for (halfedge_descriptor hd : halfedges(test_mash)) {
+		if (CGAL::is_border(hd, test_mash)) {
+			f << "halfedge detected" << std::endl;
+		}
+	}
+
+	// CGAL::Side_of_triangle_mesh<CGAL::Surface_mesh<Point_3>, Kernel> inside(test_mash);
+	// auto res = inside(mypoint);
+
+	// if (res == CGAL::ON_BOUNDARY || res == CGAL::ON_BOUNDED_SIDE) {
+	// 	f << "point is inside" << std::endl;
+	// }
+	// if (res == CGAL::ON_UNBOUNDED_SIDE) {
+	// 	f << "point is outside" << std::endl;
+	// }
+
+	// f << location.second[0] << std::endl;
+	// f << location.second[1] << std::endl;
+	// f << location.second[2] << std::endl;
+	// f << location.first << std::endl;
 	// std::ifstream stream(fname, std::ios_base::binary);
 	// if (!stream) {
 	// 	std::cerr << "Error: cannot read file " << fname << std::endl;
