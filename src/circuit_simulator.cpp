@@ -280,15 +280,15 @@ void CircuitSimulator::InitializeTransferFunctions() {
 
 	transfer_functions = std::make_shared<TFCollection>();
 
-	transfer_functions->sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS);
-	transfer_functions->sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[1], SIS);
-	transfer_functions->sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[2], SIS);
-	transfer_functions->sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[3], SIS);
-	transfer_functions->mis_input_a_first_rr = InitializeTransferFunction(parsed_tf_models[4], MIS);
-	transfer_functions->mis_input_b_first_rr = InitializeTransferFunction(parsed_tf_models[5], MIS);
+	transfer_functions->sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS, AFALLING);
+	transfer_functions->sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[1], SIS, ARISING);
+	transfer_functions->sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[2], SIS, OTHER);
+	transfer_functions->sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[3], SIS, OTHER);
+	transfer_functions->mis_input_a_first_rr = InitializeTransferFunction(parsed_tf_models[4], MIS, OTHER);
+	transfer_functions->mis_input_b_first_rr = InitializeTransferFunction(parsed_tf_models[5], MIS, OTHER);
 
 	// TODO: make this configurable
-	double max_shift = 2;
+	double max_shift = 1.5;
 	TransitionParameters default_prev_out_rising = {7.36, max_shift};
 	TransitionParameters default_prev_out_falling = {-12.23, max_shift};
 
@@ -300,7 +300,7 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->mis_input_b_first_rr->SetDefaultValues(default_prev_out_falling, max_shift);
 }
 
-std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type) {
+std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type, ANNSISTYPE ty_type) {
 	std::string tf_approach = sis_transfer_function.tf_approach;
 	std::transform(tf_approach.begin(), tf_approach.end(), tf_approach.begin(), ::toupper);
 	std::shared_ptr<TransferFunction> transfer_function;
@@ -314,7 +314,7 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 
 	} else if (tf_approach.compare("ANN") == 0) {
 		if (model_type == SIS) {
-			transfer_function = std::make_shared<ANNSISTransferFunction>();
+			transfer_function = std::make_shared<ANNSISTransferFunction>(ty_type);
 		} else {
 			std::cerr << "ANN MSI not yet supported." << std::endl;
 			throw std::exception();

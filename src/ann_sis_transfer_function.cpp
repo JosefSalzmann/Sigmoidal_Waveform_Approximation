@@ -1,5 +1,7 @@
 #include "ann_sis_transfer_function.h"
 
+#include <plog/Log.h>
+
 #include <iostream>
 
 void ANNSISTransferFunction::ReadModel(const std::string& file_name) {
@@ -17,6 +19,14 @@ void ANNSISTransferFunction::ReadModel(const std::string& file_name) {
 	} catch (const std::exception& e) {
 		std::cerr << "Error whille loading ANN model: " << file_name << std::endl;
 		throw std::exception();
+	}
+
+	if (tf_type == AFALLING) {
+		boundary_watchdog = BoundaryWatchdog();
+		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_A_falling.off");
+	} else if (tf_type == ARISING) {
+		boundary_watchdog = BoundaryWatchdog();
+		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_A_rising.off");
 	}
 }
 
@@ -37,6 +47,20 @@ TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vec
 
 	if (time_shift > MAX_TIME_SHIFT) {
 		time_shift = MAX_TIME_SHIFT;
+	}
+
+	if (tf_type == AFALLING || tf_type == ARISING) {
+		std::vector<float> tf_parameters = {(float)time_shift, (float)current_inp_steep, (float)prev_out_steep};
+		if (boundary_watchdog.ParametersAreOutsideValidRegion(tf_parameters)) {
+			auto corrected_tf_parameters = boundary_watchdog.GetClosestInsideValidRegion(tf_parameters);
+
+			PLOG_DEBUG << "Corrected Parameters " << std::setprecision(5) << time_shift << ", " << current_inp_steep << ", " << prev_out_steep
+			           << " to " << corrected_tf_parameters[0] << ", " << corrected_tf_parameters[1] << ", " << corrected_tf_parameters[2] << ".";
+
+			time_shift = (double)corrected_tf_parameters[0];
+			current_inp_steep = (double)corrected_tf_parameters[1];
+			prev_out_steep = (double)corrected_tf_parameters[2];
+		}
 	}
 
 	auto ann_input = cppflow::tensor({(float)time_shift, (float)current_inp_steep, (float)prev_out_steep});

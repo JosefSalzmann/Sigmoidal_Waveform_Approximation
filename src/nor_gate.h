@@ -28,6 +28,12 @@ enum Input {
 	Input_B
 };
 
+enum ANNSISTYPE {
+	AFALLING,
+	ARISING,
+	OTHER
+};
+
 class NORGate;
 
 struct NORGateInput {

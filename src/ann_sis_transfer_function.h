@@ -7,6 +7,7 @@
 #include <cppflow/model.h>
 #include <cppflow/ops.h>
 
+#include "boundary_watchdog.h"
 #include "nor_gate.h"
 
 class ANNSISTransferFunction : public TransferFunction {
@@ -16,13 +17,15 @@ class ANNSISTransferFunction : public TransferFunction {
 	TransitionParameters default_prev_tr;
 	double MAX_TIME_SHIFT;
 	int model_degree;
+	ANNSISTYPE tf_type;
+	BoundaryWatchdog boundary_watchdog;
 
 	int GetDegreeOfModel(const std::string& file_name);
 	std::vector<std::string> GetLineSplit(const std::string& line);
 	double CalculateParameter(const std::vector<double>& coeffs, const std::vector<double>& parameters);
 
    public:
-	ANNSISTransferFunction() : default_prev_tr{}, MAX_TIME_SHIFT{1.5}, model_degree{-1} {};
+	ANNSISTransferFunction(ANNSISTYPE ty_type) : default_prev_tr{}, MAX_TIME_SHIFT{1.5}, model_degree{-1}, tf_type{ty_type} {};
 	void ReadModel(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
 	void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) override;

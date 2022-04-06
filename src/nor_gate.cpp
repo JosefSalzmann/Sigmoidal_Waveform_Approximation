@@ -80,9 +80,9 @@ InitialValue NORGate::GetInitialOutputValue() {
  * Mark transitons as canceled if cancelation happens.
  */
 void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
-	if (output_node_name.compare("OA_9") == 0 && transition->parameters.shift > 102) {
-		int debug = 0;
-	}
+	// if (output_node_name.compare("OA_9") == 0 && transition->parameters.shift > 102) {
+	// 	int debug = 0;
+	// }
 
 	if (transition->cancelation) {
 		return;
@@ -173,9 +173,9 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 	* Check for cancelation
 	*/
 	if (!mis && CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
-		if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
-			int debug = 0;
-		}
+		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
+		// 	int debug = 0;
+		// }
 		PLOG_DEBUG << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
 		           << " at Gate " << this->gate_name << ".";
 		CancelTransition(latest_valid_output_tr, schedule);
