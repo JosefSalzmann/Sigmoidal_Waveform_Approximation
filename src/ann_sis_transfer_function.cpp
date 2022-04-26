@@ -23,10 +23,10 @@ void ANNSISTransferFunction::ReadModel(const std::string& file_name) {
 
 	if (tf_type == AFALLING) {
 		boundary_watchdog = BoundaryWatchdog();
-		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_A_falling.off");
+		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_A_falling_stretched.off");
 	} else if (tf_type == ARISING) {
 		boundary_watchdog = BoundaryWatchdog();
-		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_A_rising.off");
+		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_A_rising_stretched.off");
 	}
 }
 

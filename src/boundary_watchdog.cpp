@@ -34,12 +34,14 @@ bool BoundaryWatchdog::ParametersAreOutsideValidRegion(const std::vector<float>&
 }
 
 std::vector<float> BoundaryWatchdog::GetClosestInsideValidRegion(const std::vector<float>& parameters) {
-	auto current_point = BuildPointFromParameters(parameters);
+	std::vector<float> multiplied_parameters = parameters;
+	multiplied_parameters[0] = multiplied_parameters[0] * T_MULTIPLIER;
+	auto current_point = BuildPointFromParameters(multiplied_parameters);
 
 	auto location = CGAL::Polygon_mesh_processing::locate_with_AABB_tree(current_point, parameter_aabb_tree, parameter_mesh);
 	auto location_point = CGAL::Polygon_mesh_processing::construct_point(location, parameter_mesh);
 
-	return {(float)location_point.x(), (float)location_point.y(), (float)location_point.z()};
+	return {(float)location_point.x() / (float)T_MULTIPLIER, (float)location_point.y(), (float)location_point.z()};
 }
 
 Point_3 BoundaryWatchdog::BuildPointFromParameters(const std::vector<float>& parameters) {
