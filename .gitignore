@@ -4,6 +4,14 @@
 # Executables
 *.exe
 
+# 3D-Data
+*.ply
+*.pcd
+
+# log-file
+*.log
+output.txt
+
 # cmake testing
 /testing/CMakeFiles/*
 /testing/CMakeCache.txt

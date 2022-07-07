@@ -18,13 +18,13 @@ void PCLTest::test() {
 	    cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PCDReader reader;
 
-	reader.read("rising_input_LUT_test.pcd", *cloud);
+	reader.read("rising_input_LUT.pcd", *cloud);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::ConcaveHull<pcl::PointXYZ> chull;
 	std::vector<pcl::Vertices> polygons;
 	chull.setInputCloud(cloud);
-	chull.setAlpha(1);
+	chull.setAlpha(20);
 	chull.reconstruct(*cloud_hull, polygons);
 
 	std::cerr << "Concave hull has: " << cloud_hull->size()

@@ -288,9 +288,9 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->mis_input_b_first_rr = InitializeTransferFunction(parsed_tf_models[5], MIS, OTHER);
 
 	// TODO: make this configurable
-	double max_shift = 1.5;
-	TransitionParameters default_prev_out_rising = {7.36, max_shift};
-	TransitionParameters default_prev_out_falling = {-12.23, max_shift};
+	double max_shift = 0.15;
+	TransitionParameters default_prev_out_rising = {105, max_shift};
+	TransitionParameters default_prev_out_falling = {-150, max_shift};
 
 	transfer_functions->sis_input_a_falling->SetDefaultValues(default_prev_out_rising, max_shift);
 	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, max_shift);

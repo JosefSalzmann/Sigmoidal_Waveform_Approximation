@@ -39,7 +39,7 @@ typedef CGAL::AABB_traits<K, AABB_face_graph_primitive> AABB_face_graph_traits;
 
 class BoundaryWatchdog {
    private:
-	double T_MULTIPLIER = 100;
+	double T_MULTIPLIER = 1000;
 	CGAL::Surface_mesh<Point_3> parameter_mesh;
 	CGAL::AABB_tree<AABB_face_graph_traits> parameter_aabb_tree;
 	Point_3 BuildPointFromParameters(const std::vector<float>& parameters);
