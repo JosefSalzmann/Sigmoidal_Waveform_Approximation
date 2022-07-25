@@ -1,6 +1,6 @@
 CXX = g++
 # TODO change -g to -O3 in the end
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -O3
 CGALFLAGS = -DBOOST_ALL_NO_LIB -DCGAL_EIGEN3_ENABLED -DCGAL_USE_GMPXX=1 -isystem /usr/include/eigen3 -frounding-math -pthread 
 PCLFLAGS = -I/usr/include/pcl-1.10 -I/usr/include/eigen3
 LIBS = -L. -lcryptominisat5 -isystem libtensorflow2 -ltensorflow -isystem cppflow /usr/lib/x86_64-linux-gnu/libgmpxx.so \

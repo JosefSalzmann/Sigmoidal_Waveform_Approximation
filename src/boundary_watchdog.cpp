@@ -21,7 +21,7 @@ void BoundaryWatchdog::LoadOffFile(std::string file) {
 
 bool BoundaryWatchdog::ParametersAreOutsideValidRegion(const std::vector<float>& parameters) {
 	auto current_point = BuildPointFromParameters(parameters);
-	auto point_outside = Point_3(1000, 0, 0);
+	auto point_outside = Point_3(100000, 0, 0);
 
 	Segment segment_query(current_point, point_outside);
 
