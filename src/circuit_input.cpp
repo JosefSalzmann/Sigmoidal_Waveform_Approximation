@@ -70,8 +70,8 @@ TransitionParameters CircuitInput::ParseInputFileLine(const std::string& line) {
 
 	std::string shift_param_str = line.substr(steepness_param_end + 1, line.size() - steepness_param_end - 1);
 	double shift_param = std::strtod(shift_param_str.c_str(), &endptr);
-	if (*endptr != '\0' ||  // error, we didn't consume the entire string
-	    errno != 0)         // error, overflow or underflow
+	if (             /* *endptr != '\0' ||  // error, we didn't consume the entire string*/
+	    errno != 0)  // error, overflow or underflow
 	{
 		std::cerr << "conversion error in " << file_name << ": " << line << std::endl;
 		throw std::exception();
