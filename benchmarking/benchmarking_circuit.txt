@@ -31,8 +31,8 @@ OA_9
 OA_10
 
 TRANSFERFUNCTIONS
-SIS_A_F ANN tfs/SIS_A_falling_model
-SIS_A_R ANN tfs/SIS_A_rising_model
+SIS_A_F ANN tfs/SIS_B_falling_model
+SIS_A_R ANN tfs/SIS_B_rising_model
 SIS_B_F ANN tfs/SIS_B_falling_model
 SIS_B_R ANN tfs/SIS_B_rising_model
 MIS_A_frist_RR POLY tfs/MIS_Input_A_first_rr.txt
