@@ -6,12 +6,12 @@
 
 #include "circuit_file_parser.h"
 #include "circuit_input.h"
-#include "nor_gate.h"
+#include "logic_gate.h"
 #include "transition_schedule.h"
 
 class CircuitSimulator {
    private:
-	std::vector<std::shared_ptr<NORGate>> nor_gates;
+	std::vector<std::shared_ptr<LogicGate>> nor_gates;
 	std::vector<std::shared_ptr<CircuitInput>> circuit_inputs;
 	CircuitFileParser parser;
 	std::shared_ptr<TransitionSchedule> transition_schedule;
@@ -24,7 +24,7 @@ class CircuitSimulator {
 	static bool ParsedInputSorter(const ParsedInput& lhs, const ParsedInput& rhs);
 	int GetNORGateIndexFromOutputName(const std::string& name);
 	int GetCircuitInputIndexFromOutputName(const std::string& name);
-	void SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> nor_gate, InitialValue initial_value);
+	void SetNORGateSubscirbersInputValue(std::shared_ptr<LogicGate> nor_gate, InitialValue initial_value);
 	void InitializeTransferFunctions();
 
    public:

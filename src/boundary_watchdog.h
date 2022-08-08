@@ -24,7 +24,7 @@
 #include <fstream>
 #include <vector>
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 

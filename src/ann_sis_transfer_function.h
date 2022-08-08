@@ -8,7 +8,7 @@
 #include <cppflow/ops.h>
 
 #include "boundary_watchdog.h"
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 class ANNSISTransferFunction : public TransferFunction {
    private:

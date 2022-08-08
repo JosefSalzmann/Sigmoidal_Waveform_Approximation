@@ -18,7 +18,7 @@ void PCLTest::test() {
 	    cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PCDReader reader;
 
-	reader.read("falling_input_LUT.pcd", *cloud);
+	reader.read("rising_input_LUT.pcd", *cloud);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::ConcaveHull<pcl::PointXYZ> chull;
@@ -31,7 +31,7 @@ void PCLTest::test() {
 	          << " data points." << std::endl;
 
 	pcl::PCDWriter writer;
-	writer.write("falling_input_LUT_concave_hull.pcd", *cloud_hull, false);
+	writer.write("rising_input_LUT_concave_hull.pcd", *cloud_hull, false);
 
 	std::cout << "OFF" << std::endl
 	          << (int)cloud_hull->points.size() << " " << polygons.size() << " 0" << std::endl;

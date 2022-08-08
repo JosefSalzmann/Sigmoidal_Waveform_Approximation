@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 class CircuitInput : public TransitionSource, public std::enable_shared_from_this<CircuitInput> {
    private:

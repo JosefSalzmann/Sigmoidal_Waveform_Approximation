@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 struct ParsedInput {
 	std::string node_name;
@@ -14,11 +14,11 @@ struct ParsedInput {
 };
 
 struct ParsedGate {
+	std::string gate_type;
 	std::string gate_name;
 	std::string ouput_name;
 	std::string input_a_name;
 	std::string input_b_name;
-	// std::string gate_type;
 };
 
 struct ParsedOutput {
@@ -26,7 +26,7 @@ struct ParsedOutput {
 };
 
 struct ParsedTFModel {
-	std::string tf_model_type;  // possible values: SIS_Input_A_Falling, SIS_Input_B_Rising, MIS_Input_A_First_RR
+	std::string tf_model_type;  // possible values: SIS_Input_A_Falling, SIS_Input_B_Rising, SIS_Inverter_...
 	std::string tf_approach;    // possible values: LUT, POLY = Polyonimal, ANN = Artificial Neural Network, ...
 	std::string file_name;
 };

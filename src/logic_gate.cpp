@@ -1,5 +1,5 @@
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 #include <math.h>
 #include <plog/Log.h>
@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-void NORGate::SetInputSource(const std::shared_ptr<TransitionSource>& input_source, Input input) {
+void LogicGate::SetInputSource(const std::shared_ptr<TransitionSource>& input_source, Input input) {
 	if (input == Input_A) {
 		input_a_source = input_source;
 	} else if (input == Input_B) {
@@ -15,7 +15,7 @@ void NORGate::SetInputSource(const std::shared_ptr<TransitionSource>& input_sour
 	}
 }
 
-std::shared_ptr<TransitionSource>& NORGate::GetInputSource(Input input) {
+std::shared_ptr<TransitionSource>& LogicGate::GetInputSource(Input input) {
 	if (input == Input_A) {
 		return input_a_source;
 	} else {
@@ -23,15 +23,15 @@ std::shared_ptr<TransitionSource>& NORGate::GetInputSource(Input input) {
 	}
 }
 
-std::vector<std::shared_ptr<Transition>>& NORGate::GetOutputTransitions() {
+std::vector<std::shared_ptr<Transition>>& LogicGate::GetOutputTransitions() {
 	return output_transitions;
 }
 
-void NORGate::AddSubscriber(NORGateInput subscriber) {
+void LogicGate::AddSubscriber(NORGateInput subscriber) {
 	subscribers.push_back(subscriber);
 }
 
-void NORGate::SetInitialInput(InitialValue initial_value, Input input) {
+void LogicGate::SetInitialInput(InitialValue initial_value, Input input) {
 	// set initial input value
 	if (input == Input_A) {
 		initial_value_input_a = initial_value;
@@ -63,15 +63,15 @@ void NORGate::SetInitialInput(InitialValue initial_value, Input input) {
 	}
 }
 
-std::vector<NORGateInput>& NORGate::GetSubscribers() {
+std::vector<NORGateInput>& LogicGate::GetSubscribers() {
 	return subscribers;
 }
 
-std::string NORGate::GetOutputName() {
+std::string LogicGate::GetOutputName() {
 	return output_node_name;
 }
 
-InitialValue NORGate::GetInitialOutputValue() {
+InitialValue LogicGate::GetInitialOutputValue() {
 	return initial_value_output;
 }
 
@@ -79,7 +79,7 @@ InitialValue NORGate::GetInitialOutputValue() {
  * Propgate a transition and register the newly created transition in the schedule.
  * Mark transitons as canceled if cancelation happens.
  */
-void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
+void LogicGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
 	// if (output_node_name.compare("OA_9") == 0 && transition->parameters.shift > 102) {
 	// 	int debug = 0;
 	// }
@@ -131,37 +131,24 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 
 	TransitionParameters generated_outp_tr_params;
 	std::shared_ptr<Transition> generated_outp_tr = std::shared_ptr<Transition>(new Transition);
-	bool mis = CheckIfMIS(transition, latest_valid_output_tr, latest_valid_input_a_tr, latest_valid_input_b_tr, input);
-	if (mis) {
-		// do MIS stuff
-		// throw away the last output transition, since it gets overwritten now.
 
-		//output_transitions.pop_back();
-		latest_valid_output_tr->cancelation = true;
-		CancelTransition(latest_valid_output_tr, schedule);
+	// do SIS stuff
 
-		generated_outp_tr_params = CaclulateMISParameters(second_latest_valid_output_tr->parameters, transition->parameters);
-		generated_outp_tr->parents = {transition, mis_partner};
-		generated_outp_tr->is_MIS = true;
-	} else {
-		// do SIS stuff
-
-		/* if the last transition of the other input was rising i.e. other input is now at
-		* VDD, the transition does not propagate
-		*/
-		if ((input == Input_A && latest_valid_input_b_tr->parameters.steepness > 0) ||
-		    (input == Input_B && latest_valid_input_a_tr->parameters.steepness > 0)) {
-			return;
-		}
-
-		// TODO: find better way to make sure that the last output transition was not canceled
-		// while (output_transitions.back()->cancelation) {
-		// 	output_transitions.pop_back();
-		// }
-
-		generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
-		generated_outp_tr->parents = {transition};
+	/* if the last transition of the other input was rising i.e. other input is now at
+	* VDD, the transition does not propagate
+	*/
+	if ((input == Input_A && latest_valid_input_b_tr->parameters.steepness > 0) ||
+	    (input == Input_B && latest_valid_input_a_tr->parameters.steepness > 0)) {
+		return;
 	}
+
+	// TODO: find better way to make sure that the last output transition was not canceled
+	// while (output_transitions.back()->cancelation) {
+	// 	output_transitions.pop_back();
+	// }
+
+	generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
+	generated_outp_tr->parents = {transition};
 
 	// TODO: add check if the genereated output parameters are reasonable!
 	generated_outp_tr->parameters = generated_outp_tr_params;
@@ -172,18 +159,13 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
 	/*
 	* Check for cancelation
 	*/
-	if (!mis && CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
+	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
 		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
 		// 	int debug = 0;
 		// }
 		PLOG_DEBUG << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
 		           << " at Gate " << this->gate_name << ".";
 		CancelTransition(latest_valid_output_tr, schedule);
-		generated_outp_tr->cancelation = true;
-		generated_outp_tr->is_responsible_for_cancelation = true;
-		generated_outp_tr->cancels_tr = latest_valid_output_tr;
-	} else if (mis && CheckCancelation(second_latest_valid_output_tr->parameters, generated_outp_tr_params)) {
-		CancelTransition(second_latest_valid_output_tr, schedule);
 		generated_outp_tr->cancelation = true;
 		generated_outp_tr->is_responsible_for_cancelation = true;
 		generated_outp_tr->cancels_tr = latest_valid_output_tr;
@@ -200,7 +182,7 @@ void NORGate::PropagateTransition(const std::shared_ptr<Transition>& transition,
  *	Calculate the output parameters of the output transition cause by current_input_tr
  * 	by using the appropriate SIS transfer function, i.e. right input and right polarity.
  */
-TransitionParameters NORGate::CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input) {
+TransitionParameters LogicGate::CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input) {
 	if (input == Input_A) {
 		if (current_input_tr.steepness > 0) {
 			// rising transition at input A
@@ -224,80 +206,12 @@ TransitionParameters NORGate::CaclulateSISParametersAtInput(TransitionParameters
 	}
 }
 
-TransitionParameters NORGate::CaclulateMISParameters(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr) {
-	TransitionParameters input_a_params, input_b_params;
-	if (mis_parnter_input == Input_A) {
-		input_a_params = mis_partner->parameters;
-		input_b_params = current_input_tr;
-	} else {
-		input_a_params = current_input_tr;
-		input_b_params = mis_partner->parameters;
-	}
-
-	if (input_a_params.shift < input_b_params.shift) {
-		return transfer_functions->mis_input_a_first_rr->CalculatePropagation(
-		    {input_a_params,
-		     input_b_params,
-		     prev_outp_tr});
-	} else {
-		return transfer_functions->mis_input_b_first_rr->CalculatePropagation(
-		    {input_a_params,
-		     input_b_params,
-		     prev_outp_tr});
-	}
-}
-
-/*
- *	Check if transition of the other input also had a transition near to this
- * 	one. If yes, use MIS transfer functions to calculate the output transition.
- */
-bool NORGate::CheckIfMIS(const std::shared_ptr<Transition>& transition,
-                         const std::shared_ptr<Transition>& latest_output_tr,
-                         const std::shared_ptr<Transition>& latest_a_tr,
-                         const std::shared_ptr<Transition>& latest_b_tr, Input input) {
-	if (transition->parameters.steepness < 0) {
-		// TODO: until now only support MIS for both input rising
-		return false;
-	}
-	double current_tr_shift = transition->parameters.shift;
-	if (input == Input_A) {
-		double latest_b_tr_shift = latest_b_tr->parameters.shift;
-		// TODO make the 1.0 configurable
-		if (current_tr_shift - latest_b_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_b_tr) && latest_output_tr->parents[0] == latest_b_tr) {
-			mis_partner = latest_b_tr;
-			mis_parnter_input = Input_B;
-			return true;
-		}
-	} else {
-		double latest_a_tr_shift = latest_a_tr->parameters.shift;
-		// TODO make the 1.0 configurable
-		if (current_tr_shift - latest_a_tr_shift < 1.0 && TransitionsSamePolarity(transition, latest_a_tr) && latest_output_tr->parents[0] == latest_a_tr) {
-			mis_partner = latest_a_tr;
-			mis_parnter_input = Input_A;
-			return true;
-		}
-	}
-	return false;
-}
-
-/*
- *	Return true if both transitions are falling or both are rising, false otherwise.
- */
-bool NORGate::TransitionsSamePolarity(const std::shared_ptr<Transition>& transition1, const std::shared_ptr<Transition>& transition2) {
-	if ((transition1->parameters.steepness > 0 && transition2->parameters.steepness > 0) ||
-	    (transition1->parameters.steepness <= 0 && transition2->parameters.steepness <= 0)) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
 /*
  * Mark a transition and all its children as canceled. If a transition gets canceled that was 
  * the part of a MIS propagation, we have to reschedule the other transitions of the MIS propgagation
  * that did not get canceled.
  */
-void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
+void LogicGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
 	PLOG_DEBUG << "Canceled Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
 	           << " at Output " << transition->source->GetOutputName() << ".";
 	if (transition->is_responsible_for_cancelation) {
@@ -308,14 +222,6 @@ void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, co
 	}
 	transition->cancelation = true;
 	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {
-		if ((*it)->is_MIS) {
-			// reschedule the parent transition which is not canceled
-			if (!(*it)->parents.front()->cancelation) {
-				schedule->AddFutureTransition((*it)->parents.front());
-			} else if (!(*it)->parents.back()->cancelation) {
-				schedule->AddFutureTransition((*it)->parents.back());
-			}
-		}
 		CancelTransition(*it, schedule);
 	}
 }
@@ -323,7 +229,7 @@ void NORGate::CancelTransition(const std::shared_ptr<Transition>& transition, co
 /*
  * Calculate the function value of two adjacent transitions.
  */
-double NORGate::CalculatePulseValue(double vdd, double x, TransitionParameters transition1, TransitionParameters transition2) {
+double LogicGate::CalculatePulseValue(double vdd, double x, TransitionParameters transition1, TransitionParameters transition2) {
 	double time_mult = pow(10, 10);
 	double tr1_value = 1 / (1 + exp(-transition1.steepness * (time_mult * x - transition1.shift)));
 	double tr2_value = 1 / (1 + exp(-transition2.steepness * (time_mult * x - transition2.shift)));
@@ -336,7 +242,7 @@ double NORGate::CalculatePulseValue(double vdd, double x, TransitionParameters t
  * Checks by looking at the maximum/minimum value generated by the addition of the
  * two transitions. If the maximum/minimum is smaller/greater than Vdd/2 they cancel each other.
  */
-bool NORGate::CheckCancelation(TransitionParameters transition1, TransitionParameters transition2) {
+bool LogicGate::CheckCancelation(TransitionParameters transition1, TransitionParameters transition2) {
 	double vdd = 1.2;
 	int n_points = 20;
 	double test_points[n_points];

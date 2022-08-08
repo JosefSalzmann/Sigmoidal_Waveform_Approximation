@@ -4,7 +4,7 @@
 #ifndef POLYNOMIAL_SIS_TRANSFER_FUNCTION_H
 #define POLYNOMIAL_SIS_TRANSFER_FUNCTION_H
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 class PolynomialSISTransferFunction : public TransferFunction {
    private:

@@ -11,7 +11,7 @@
 #include <sstream>
 #include <string>
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 int CircuitFileParser::ParseFile(const std::string& file_name) {
 	SetPathToCircuitFile(file_name);
@@ -217,6 +217,9 @@ ParsedGate CircuitFileParser::GetParsedGate(const std::string& line) {
 	ParsedGate gate;
 	int substring_start = 0;
 	int substring_end = line.find(' ');
+	gate.gate_type = line.substr(substring_start, substring_end - substring_start);
+	substring_start = substring_end + 1;
+	substring_end = line.find(' ', substring_start);
 	gate.gate_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
 	substring_end = line.find(' ', substring_start);
@@ -225,6 +228,10 @@ ParsedGate CircuitFileParser::GetParsedGate(const std::string& line) {
 	substring_end = line.find(' ', substring_start);
 	gate.input_a_name = line.substr(substring_start, substring_end - substring_start);
 	substring_start = substring_end + 1;
+	if (substring_start > (int)line.size()) {
+		gate.input_b_name = "";
+		return gate;
+	}
 	substring_end = line.find(' ', substring_start);
 	gate.input_b_name = line.substr(substring_start, substring_end - substring_start);
 	return gate;

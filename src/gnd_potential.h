@@ -4,7 +4,7 @@
 #ifndef GND_POTENTIAL_H
 #define GND_POTENTIAL_H
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 // not really a transitionsource, only needed for determining initial values
 class GNDPotential : public TransitionSource {

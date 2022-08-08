@@ -1,8 +1,8 @@
 /*
-*   NOR Gate class
+*   Logic Gate class
 */
-#ifndef NOR_GATE_H
-#define NOR_GATE_H
+#ifndef LOGIC_GATE_H
+#define LOGIC_GATE_H
 
 #include <float.h>
 
@@ -23,6 +23,11 @@ enum InitialValue {
 	UNDEFINED
 };
 
+enum FunctionType {
+	NOR,
+	INV
+};
+
 enum Input {
 	Input_A,
 	Input_B
@@ -34,10 +39,10 @@ enum ANNSISTYPE {
 	OTHER
 };
 
-class NORGate;
+class LogicGate;
 
 struct NORGateInput {
-	std::shared_ptr<NORGate> nor_gate;
+	std::shared_ptr<LogicGate> nor_gate;
 	Input input;
 };
 
@@ -63,7 +68,6 @@ struct Transition {
 	bool cancelation = false;
 	bool is_responsible_for_cancelation = false;
 	std::shared_ptr<Transition> cancels_tr;  // transition that gets canceled by this transition
-	bool is_MIS = false;                     // true if transition was propagated using MIS transfer functions
 };
 
 enum TFModelType {
@@ -84,19 +88,14 @@ struct TFCollection {
 	std::shared_ptr<TransferFunction> sis_input_a_rising;
 	std::shared_ptr<TransferFunction> sis_input_b_falling;
 	std::shared_ptr<TransferFunction> sis_input_b_rising;
-	std::shared_ptr<TransferFunction> mis_input_a_first_rr;  // both inputs rising, shift_a < shift_b
-	std::shared_ptr<TransferFunction> mis_input_b_first_rr;  // both inputs rising, shift_b < shift_a
-
-	// TODO: add MIS tranfer functions for both outputs falling!
-	// std::shared_ptr<TransferFunction> mis_input_a_first_ff;  // both inputs falling, shift_a < shift_b
-	// std::shared_ptr<TransferFunction> mis_input_b_first_ff;  // both inputs falling, shift_b < shift_a
 };
 
 #include "gnd_potential.h"
 #include "vdd_potential.h"
 
-class NORGate : public TransitionSource, public std::enable_shared_from_this<NORGate> {
+class LogicGate : public TransitionSource, public std::enable_shared_from_this<LogicGate> {
    private:
+	FunctionType logic_function;
 	std::string gate_name;
 	std::string output_node_name;
 	std::shared_ptr<TransitionSource> input_a_source;
@@ -111,14 +110,7 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 	std::shared_ptr<TFCollection> transfer_functions;
 	std::shared_ptr<Transition> default_falling_tr;
 	std::shared_ptr<Transition> default_rising_tr;
-	std::shared_ptr<Transition> mis_partner;
-	Input mis_parnter_input;
 
-	bool CheckIfMIS(const std::shared_ptr<Transition>& transition,
-	                const std::shared_ptr<Transition>& latest_output_tr,
-	                const std::shared_ptr<Transition>& latest_a_tr,
-	                const std::shared_ptr<Transition>& latest_b_tr, Input input);
-	bool TransitionsSamePolarity(const std::shared_ptr<Transition>& transition1, const std::shared_ptr<Transition>& transition2);
 	void CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule);
 	TransitionParameters CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input);
 	TransitionParameters CaclulateMISParameters(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr);
@@ -126,24 +118,23 @@ class NORGate : public TransitionSource, public std::enable_shared_from_this<NOR
 	bool CheckCancelation(TransitionParameters transition1, TransitionParameters transition2);
 
    public:
-	NORGate(){};
-	NORGate(const std::string& gate_name,
-	        const std::string& output_node_name,
-	        const std::shared_ptr<TFCollection>& transfer_functions,
-	        double default_falling_steepness,
-	        double default_rising_steepness) : gate_name{gate_name},
-	                                           output_node_name{output_node_name},
-	                                           input_a_transitions{},
-	                                           input_b_transitions{},
-	                                           output_transitions{},
-	                                           initial_value_input_a{UNDEFINED},
-	                                           initial_value_input_b{UNDEFINED},
-	                                           initial_value_output{UNDEFINED},
-	                                           subscribers{},
-	                                           transfer_functions{transfer_functions},
-	                                           default_falling_tr{std::make_shared<Transition>()},
-	                                           default_rising_tr{std::make_shared<Transition>()},
-	                                           mis_parnter_input{Input_A} {
+	LogicGate(){};
+	LogicGate(const std::string& gate_name,
+	          const std::string& output_node_name,
+	          const std::shared_ptr<TFCollection>& transfer_functions,
+	          double default_falling_steepness,
+	          double default_rising_steepness) : gate_name{gate_name},
+	                                             output_node_name{output_node_name},
+	                                             input_a_transitions{},
+	                                             input_b_transitions{},
+	                                             output_transitions{},
+	                                             initial_value_input_a{UNDEFINED},
+	                                             initial_value_input_b{UNDEFINED},
+	                                             initial_value_output{UNDEFINED},
+	                                             subscribers{},
+	                                             transfer_functions{transfer_functions},
+	                                             default_falling_tr{std::make_shared<Transition>()},
+	                                             default_rising_tr{std::make_shared<Transition>()} {
 		default_falling_tr->parameters.steepness = default_falling_steepness;
 		default_falling_tr->parameters.shift = -DBL_MAX;
 		default_rising_tr->parameters.steepness = default_rising_steepness;

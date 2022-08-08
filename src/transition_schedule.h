@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include "nor_gate.h"
+#include "logic_gate.h"
 
 struct Transition;
 

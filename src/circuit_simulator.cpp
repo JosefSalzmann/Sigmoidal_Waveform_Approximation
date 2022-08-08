@@ -13,8 +13,7 @@
 
 #include "ann_sis_transfer_function.h"
 #include "circuit_file_parser.h"
-#include "nor_gate.h"
-#include "polynomial_mis_transfer_function.h"
+#include "logic_gate.h"
 #include "polynomial_sis_transfer_function.h"
 
 void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
@@ -63,7 +62,7 @@ void CircuitSimulator::InitializeNORGates() {
 	std::sort(parsed_nor_gates.begin(), parsed_nor_gates.end(), &ParsedNORGateSorter);
 	for (auto it = parsed_nor_gates.begin(); it != parsed_nor_gates.end(); it++) {
 		// TODO: make default steepnesses configurable
-		std::shared_ptr<NORGate> nor_gate(new NORGate(it->gate_name, it->ouput_name, transfer_functions, -12.23, 7.36));
+		std::shared_ptr<LogicGate> nor_gate(new LogicGate(it->gate_name, it->ouput_name, transfer_functions, -100.23, 100));  // TODO: make this configurable
 		nor_gates.push_back(nor_gate);
 	}
 
@@ -263,7 +262,7 @@ void CircuitSimulator::DetermineGatesInitialValues() {
  * Set the initial input values of the gates subscribers, 
  * by setting the initial values of the inputs the initial output value is derived automatically.
  */
-void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<NORGate> nor_gate, InitialValue initial_value) {
+void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<LogicGate> nor_gate, InitialValue initial_value) {
 	auto subscribers = nor_gate->GetSubscribers();
 	for (auto subscriber = subscribers.begin(); subscriber != subscribers.end(); subscriber++) {
 		subscriber->nor_gate->SetInitialInput(initial_value, subscriber->input);
@@ -284,8 +283,6 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[1], SIS, ARISING);
 	transfer_functions->sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[2], SIS, OTHER);
 	transfer_functions->sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[3], SIS, OTHER);
-	transfer_functions->mis_input_a_first_rr = InitializeTransferFunction(parsed_tf_models[4], MIS, OTHER);
-	transfer_functions->mis_input_b_first_rr = InitializeTransferFunction(parsed_tf_models[5], MIS, OTHER);
 
 	// TODO: make this configurable
 	double max_shift = 0.15;
@@ -296,8 +293,6 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, max_shift);
 	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, max_shift);
 	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, max_shift);
-	transfer_functions->mis_input_a_first_rr->SetDefaultValues(default_prev_out_falling, max_shift);
-	transfer_functions->mis_input_b_first_rr->SetDefaultValues(default_prev_out_falling, max_shift);
 }
 
 std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type, ANNSISTYPE ty_type) {
@@ -307,8 +302,6 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 	if (tf_approach.compare("POLY") == 0) {
 		if (model_type == SIS) {
 			transfer_function = std::make_shared<PolynomialSISTransferFunction>();
-		} else {
-			transfer_function = std::make_shared<PolynomialMISTransferFunction>();
 		}
 		transfer_function->ReadModel(sis_transfer_function.file_name);
 

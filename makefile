@@ -28,12 +28,11 @@ TEST_DIR = ./testing
 MAIN = main
 OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/circuit_file_parser.o \
-		$(OBJ_DIR)/nor_gate.o \
+		$(OBJ_DIR)/logic_gate.o \
 		$(OBJ_DIR)/transition_schedule.o \
 		$(OBJ_DIR)/circuit_simulator.o \
 		$(OBJ_DIR)/circuit_input.o \
 		$(OBJ_DIR)/polynomial_sis_transfer_function.o \
-		$(OBJ_DIR)/polynomial_mis_transfer_function.o \
 		$(OBJ_DIR)/gnd_potential.o \
 		$(OBJ_DIR)/vdd_potential.o \
 		$(OBJ_DIR)/ann_sis_transfer_function.o \
