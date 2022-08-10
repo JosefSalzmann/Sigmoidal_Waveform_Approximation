@@ -25,8 +25,9 @@ class ANNSISTransferFunction : public TransferFunction {
 	double CalculateParameter(const std::vector<double>& coeffs, const std::vector<double>& parameters);
 
    public:
-	ANNSISTransferFunction(ANNSISTYPE ty_type) : default_prev_tr{}, MAX_TIME_SHIFT{1.5}, model_degree{-1}, tf_type{ty_type} {};
+	explicit ANNSISTransferFunction(const ANNSISTYPE& tf_type) : default_prev_tr{}, MAX_TIME_SHIFT{1.5}, model_degree{-1}, tf_type{tf_type} {};
 	void ReadModel(const std::string& file_name) override;
+	void ReadBoundaryFile(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
 	void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) override;
 };

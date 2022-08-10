@@ -61,6 +61,14 @@ void LogicGate::SetInitialInput(InitialValue initial_value, Input input) {
 		initial_value_output = GND;
 		output_transitions = {default_falling_tr};
 	}
+
+	if (gate_type == INV) {
+		if (initial_value == VDD) {
+			output_transitions = {default_falling_tr};
+		} else {
+			output_transitions = {default_rising_tr};
+		}
+	}
 }
 
 std::vector<NORGateInput>& LogicGate::GetSubscribers() {
@@ -75,11 +83,19 @@ InitialValue LogicGate::GetInitialOutputValue() {
 	return initial_value_output;
 }
 
+void LogicGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
+	if (gate_type == NOR) {
+		return PropagateTransitionNOR(transition, input, schedule);
+	} else if (gate_type == INV) {
+		return PropagateTransitionINV(transition, input, schedule);
+	}
+}
+
 /*
  * Propgate a transition and register the newly created transition in the schedule.
  * Mark transitons as canceled if cancelation happens.
  */
-void LogicGate::PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
+void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
 	// if (output_node_name.compare("OA_9") == 0 && transition->parameters.shift > 102) {
 	// 	int debug = 0;
 	// }
@@ -150,7 +166,64 @@ void LogicGate::PropagateTransition(const std::shared_ptr<Transition>& transitio
 	generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
 	generated_outp_tr->parents = {transition};
 
-	// TODO: add check if the genereated output parameters are reasonable!
+	generated_outp_tr->parameters = generated_outp_tr_params;
+	generated_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
+	generated_outp_tr->sinks = subscribers;
+	transition->children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
+
+	/*
+	* Check for cancelation
+	*/
+	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
+		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
+		// 	int debug = 0;
+		// }
+		PLOG_DEBUG << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		           << " at Gate " << this->gate_name << ".";
+		CancelTransition(latest_valid_output_tr, schedule);
+		generated_outp_tr->cancelation = true;
+		generated_outp_tr->is_responsible_for_cancelation = true;
+		generated_outp_tr->cancels_tr = latest_valid_output_tr;
+	} else {
+		PLOG_DEBUG << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		           << " at Gate " << this->gate_name << ".";
+	}
+
+	schedule->AddFutureTransition(generated_outp_tr);
+	output_transitions.push_back(generated_outp_tr);
+}
+
+void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
+	if (transition->cancelation) {
+		return;
+	}
+
+	PLOG_DEBUG << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	           << " at Gate " << this->gate_name << ".";
+
+	std::shared_ptr<Transition> latest_valid_output_tr;
+	std::shared_ptr<Transition> second_latest_valid_output_tr;
+
+	bool latest_v_out_tr_found = false;
+	for (auto it = output_transitions.rbegin(); it != output_transitions.rend(); it++) {
+		if (!(*it)->cancelation) {
+			if (!latest_v_out_tr_found) {
+				latest_valid_output_tr = *it;
+				latest_v_out_tr_found = true;
+			} else {
+				second_latest_valid_output_tr = *it;
+				break;
+			}
+		}
+	}
+
+	input_a_transitions.push_back(transition);
+
+	TransitionParameters generated_outp_tr_params;
+	std::shared_ptr<Transition> generated_outp_tr = std::shared_ptr<Transition>(new Transition);
+	generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
+	generated_outp_tr->parents = {transition};
+
 	generated_outp_tr->parameters = generated_outp_tr_params;
 	generated_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
 	generated_outp_tr->sinks = subscribers;
@@ -183,24 +256,34 @@ void LogicGate::PropagateTransition(const std::shared_ptr<Transition>& transitio
  * 	by using the appropriate SIS transfer function, i.e. right input and right polarity.
  */
 TransitionParameters LogicGate::CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input) {
-	if (input == Input_A) {
-		if (current_input_tr.steepness > 0) {
-			// rising transition at input A
-			return transfer_functions->sis_input_a_rising->CalculatePropagation(
-			    {current_input_tr, prev_outp_tr});
+	if (gate_type == NOR) {
+		if (input == Input_A) {
+			if (current_input_tr.steepness > 0) {
+				// rising transition at input A
+				return transfer_functions->sis_input_a_rising->CalculatePropagation(
+				    {current_input_tr, prev_outp_tr});
+			} else {
+				// falling transition at input A
+				return transfer_functions->sis_input_a_falling->CalculatePropagation(
+				    {current_input_tr, prev_outp_tr});
+			}
 		} else {
-			// falling transition at input A
-			return transfer_functions->sis_input_a_falling->CalculatePropagation(
-			    {current_input_tr, prev_outp_tr});
+			if (current_input_tr.steepness > 0) {
+				// rising transition at input B
+				return transfer_functions->sis_input_b_rising->CalculatePropagation(
+				    {current_input_tr, prev_outp_tr});
+			} else {
+				// falling transition at input B
+				return transfer_functions->sis_input_b_falling->CalculatePropagation(
+				    {current_input_tr, prev_outp_tr});
+			}
 		}
-	} else {
+	} else {  //(gate_type == INV)
 		if (current_input_tr.steepness > 0) {
-			// rising transition at input B
-			return transfer_functions->sis_input_b_rising->CalculatePropagation(
+			return transfer_functions->inverter_rising->CalculatePropagation(
 			    {current_input_tr, prev_outp_tr});
 		} else {
-			// falling transition at input B
-			return transfer_functions->sis_input_b_falling->CalculatePropagation(
+			return transfer_functions->inverter_falling->CalculatePropagation(
 			    {current_input_tr, prev_outp_tr});
 		}
 	}
@@ -277,4 +360,8 @@ bool LogicGate::CheckCancelation(TransitionParameters transition1, TransitionPar
 		}
 	}
 	return false;
+}
+
+FunctionType LogicGate::GetType() {
+	return gate_type;
 }

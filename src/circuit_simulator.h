@@ -11,7 +11,7 @@
 
 class CircuitSimulator {
    private:
-	std::vector<std::shared_ptr<LogicGate>> nor_gates;
+	std::vector<std::shared_ptr<LogicGate>> logic_gates;
 	std::vector<std::shared_ptr<CircuitInput>> circuit_inputs;
 	CircuitFileParser parser;
 	std::shared_ptr<TransitionSchedule> transition_schedule;
@@ -22,13 +22,13 @@ class CircuitSimulator {
 	void DetermineGatesInitialValues();
 	static bool ParsedNORGateSorter(const ParsedGate& lhs, const ParsedGate& rhs);
 	static bool ParsedInputSorter(const ParsedInput& lhs, const ParsedInput& rhs);
-	int GetNORGateIndexFromOutputName(const std::string& name);
+	int GetGateIndexFromOutputName(const std::string& name);
 	int GetCircuitInputIndexFromOutputName(const std::string& name);
 	void SetNORGateSubscirbersInputValue(std::shared_ptr<LogicGate> nor_gate, InitialValue initial_value);
 	void InitializeTransferFunctions();
 
    public:
-	CircuitSimulator() : nor_gates{},
+	CircuitSimulator() : logic_gates{},
 	                     circuit_inputs{},
 	                     parser{CircuitFileParser()},
 	                     transition_schedule{},

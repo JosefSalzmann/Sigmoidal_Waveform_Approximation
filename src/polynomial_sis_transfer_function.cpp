@@ -63,6 +63,10 @@ void PolynomialSISTransferFunction::ReadModel(const std::string& file_name) {
 	}
 }
 
+void PolynomialSISTransferFunction::ReadBoundaryFile(const std::string& file_name) {
+	return;
+}
+
 void PolynomialSISTransferFunction::SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) {
 	MAX_TIME_SHIFT = maximal_shift;
 	default_prev_tr = default_prev_transition;

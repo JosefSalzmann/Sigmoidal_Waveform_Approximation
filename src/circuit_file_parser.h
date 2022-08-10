@@ -36,11 +36,12 @@ class CircuitFileParser {
 	std::vector<ParsedInput> parsed_inputs;
 	std::vector<ParsedGate> parsed_gates;
 	std::vector<ParsedOutput> parsed_outputs;
-	std::vector<ParsedTFModel> parsed_tf_models;
+	std::vector<ParsedTFModel> unordered_parsed_tf_models;
+	std::vector<ParsedTFModel> ordered_parsed_tf_models;
 	std::string path_to_circuit_file;
 
    public:
-	CircuitFileParser() : parsed_inputs{}, parsed_gates{}, parsed_outputs{} {}
+	CircuitFileParser() : parsed_inputs{}, parsed_gates{}, parsed_outputs{}, unordered_parsed_tf_models{}, ordered_parsed_tf_models{} {}
 	~CircuitFileParser();
 	int ParseFile(const std::string& file_name);
 	bool PerformSanityCheck();
@@ -60,6 +61,8 @@ class CircuitFileParser {
 	ParsedOutput GetParsedOutput(const std::string& line);
 	ParsedTFModel GetParsedTFModel(const std::string& line);
 	void SetPathToCircuitFile(const std::string& file_path);
+	void OrderTransferFunctions();
+	bool CompareTFModel(const ParsedTFModel& parsed_tf_model, const std::string& tf_model_type, const std::string& tf_approach);
 };
 
 #endif

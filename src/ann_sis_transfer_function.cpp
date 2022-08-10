@@ -20,14 +20,11 @@ void ANNSISTransferFunction::ReadModel(const std::string& file_name) {
 		std::cerr << "Error whille loading ANN model: " << file_name << std::endl;
 		throw std::exception();
 	}
+}
 
-	if (tf_type == AFALLING) {
-		boundary_watchdog = BoundaryWatchdog();
-		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_B_falling_input_stretched.off");
-	} else if (tf_type == ARISING) {
-		boundary_watchdog = BoundaryWatchdog();
-		boundary_watchdog.LoadOffFile("benchmarking/tfs/SIS_B_rising_input_stretched.off");
-	}
+void ANNSISTransferFunction::ReadBoundaryFile(const std::string& file_name) {
+	boundary_watchdog = BoundaryWatchdog();
+	boundary_watchdog.LoadOffFile(file_name);
 }
 
 TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vector<TransitionParameters>& parameters) {

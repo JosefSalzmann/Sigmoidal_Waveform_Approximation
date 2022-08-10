@@ -72,7 +72,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 					}
 				} else if (current_section == 3) {
 					if (LineIsParseableTFModel(line_no_front_space)) {
-						parsed_tf_models.push_back(GetParsedTFModel(line));
+						unordered_parsed_tf_models.push_back(GetParsedTFModel(line));
 					} else {
 						std::cerr << "Cannot parse: " << line << std::endl;
 						parsing_failed = true;
@@ -87,6 +87,7 @@ int CircuitFileParser::ParseFile(const std::string& file_name) {
 		throw std::exception();
 	}
 	// TODO: check if all sections were present.
+	OrderTransferFunctions();
 	return 0;
 }
 
@@ -161,7 +162,7 @@ std::vector<ParsedOutput>& CircuitFileParser::GetOutputs() {
 }
 
 std::vector<ParsedTFModel>& CircuitFileParser::GetTFModels() {
-	return parsed_tf_models;
+	return ordered_parsed_tf_models;
 }
 
 int CircuitFileParser::CountSpaces(const std::string& line) {
@@ -181,7 +182,7 @@ bool CircuitFileParser::LineIsParseableInput(const std::string& line) {
 }
 
 bool CircuitFileParser::LineIsParseableGate(const std::string& line) {
-	if (CountSpaces(line) == 3)
+	if (CountSpaces(line) == 4 or CountSpaces(line) == 3)
 		return true;
 	else
 		return false;
@@ -256,6 +257,48 @@ ParsedTFModel CircuitFileParser::GetParsedTFModel(const std::string& line) {
 	ss << path_to_circuit_file << line.substr(substring_start, substring_end - substring_start);
 	tf_model.file_name = ss.str();
 	return tf_model;
+}
+
+/**
+ * @brief Order the parsed transfer functions in a defined way
+ */
+void CircuitFileParser::OrderTransferFunctions() {
+	ParsedTFModel parsed_tf_models_arr[12];
+	for (auto it = unordered_parsed_tf_models.begin(); it < unordered_parsed_tf_models.end(); it++) {
+		ParsedTFModel current_model = *it;
+		if (CompareTFModel(current_model, "SIS_A_F", "ANN")) {
+			parsed_tf_models_arr[0] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_A_F", "OFF")) {
+			parsed_tf_models_arr[1] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_A_R", "ANN")) {
+			parsed_tf_models_arr[2] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_A_R", "OFF")) {
+			parsed_tf_models_arr[3] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_F", "ANN")) {
+			parsed_tf_models_arr[4] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_F", "OFF")) {
+			parsed_tf_models_arr[5] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_R", "ANN")) {
+			parsed_tf_models_arr[6] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_R", "OFF")) {
+			parsed_tf_models_arr[7] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_F", "ANN")) {
+			parsed_tf_models_arr[8] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_F", "OFF")) {
+			parsed_tf_models_arr[9] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_R", "ANN")) {
+			parsed_tf_models_arr[10] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_R", "OFF")) {
+			parsed_tf_models_arr[11] = current_model;
+		}
+	}
+	for (int i = 0; i < (int)unordered_parsed_tf_models.size(); i++) {
+		ordered_parsed_tf_models.push_back(parsed_tf_models_arr[i]);
+	}
+}
+
+bool CircuitFileParser::CompareTFModel(const ParsedTFModel& parsed_tf_model, const std::string& tf_model_type, const std::string& tf_approach) {
+	return parsed_tf_model.tf_model_type.compare(tf_model_type) == 0 && parsed_tf_model.tf_approach.compare(tf_approach) == 0;
 }
 
 CircuitFileParser::~CircuitFileParser() {

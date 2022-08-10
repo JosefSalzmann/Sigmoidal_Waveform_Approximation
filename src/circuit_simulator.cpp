@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <cryptominisat5/cryptominisat.h>
+#include <plog/Log.h>
 
 #include <algorithm>
 #include <fstream>
@@ -58,55 +59,68 @@ void CircuitSimulator::InitializeInputs() {
  * subscribers of the inputs. 
  */
 void CircuitSimulator::InitializeNORGates() {
-	std::vector<ParsedGate> parsed_nor_gates = parser.GetGates();
-	std::sort(parsed_nor_gates.begin(), parsed_nor_gates.end(), &ParsedNORGateSorter);
-	for (auto it = parsed_nor_gates.begin(); it != parsed_nor_gates.end(); it++) {
+	std::vector<ParsedGate> parsed_gates = parser.GetGates();
+	std::sort(parsed_gates.begin(), parsed_gates.end(), &ParsedNORGateSorter);
+	for (auto it = parsed_gates.begin(); it != parsed_gates.end(); it++) {
+		FunctionType gate_type;
+		if (it->gate_type.compare("NOR") == 0) {
+			gate_type = NOR;
+		} else if (it->gate_type.compare("INV") == 0) {
+			gate_type = INV;
+		} else {
+			PLOG_DEBUG << "Unknown gate type:" << it->gate_type;
+			exit(-1);
+		}
 		// TODO: make default steepnesses configurable
-		std::shared_ptr<LogicGate> nor_gate(new LogicGate(it->gate_name, it->ouput_name, transfer_functions, -100.23, 100));  // TODO: make this configurable
-		nor_gates.push_back(nor_gate);
+		std::shared_ptr<LogicGate> logic_gate(new LogicGate(gate_type, it->gate_name, it->ouput_name, transfer_functions, -100, 100));
+		logic_gates.push_back(logic_gate);
 	}
 
-	// add connections to nor gates
+	// add connections to gates
 	std::shared_ptr<TransitionSource> gnd_potential(new GNDPotential);
 	std::shared_ptr<TransitionSource> vdd_potential(new VDDPotential);
 	int i = 0;
-	for (auto it = parsed_nor_gates.begin(); it != parsed_nor_gates.end(); it++) {
+	for (auto it = parsed_gates.begin(); it != parsed_gates.end(); it++) {
 		std::string input_a = it->input_a_name;
 		std::string input_b = it->input_b_name;
 
-		int input_a_nor_gate_index = GetNORGateIndexFromOutputName(input_a);
-		int input_a_nor_input_index = GetCircuitInputIndexFromOutputName(input_a);
+		int input_a_gate_index = GetGateIndexFromOutputName(input_a);
+		int input_a_input_index = GetCircuitInputIndexFromOutputName(input_a);
 		if (input_a.compare("GND") == 0) {
-			nor_gates[i]->SetInputSource(gnd_potential, Input_A);
+			logic_gates[i]->SetInputSource(gnd_potential, Input_A);
 		} else if (input_a.compare("VDD") == 0) {
-			nor_gates[i]->SetInputSource(vdd_potential, Input_A);
-		} else if (input_a_nor_gate_index != -1) {
-			std::shared_ptr<TransitionSource> nor_gate_output(nor_gates[input_a_nor_gate_index]);
-			nor_gates[i]->SetInputSource(nor_gate_output, Input_A);
-			NORGateInput subscriber = NORGateInput{nor_gates[i], Input_A};
-			nor_gates[input_a_nor_gate_index]->AddSubscriber(subscriber);
-		} else if (input_a_nor_input_index != -1) {
-			std::shared_ptr<TransitionSource> circuit_input(circuit_inputs[input_a_nor_input_index]);
-			nor_gates[i]->SetInputSource(circuit_input, Input_A);
-			NORGateInput subscriber = NORGateInput{nor_gates[i], Input_A};
-			circuit_inputs[input_a_nor_input_index]->AddSubscriber(subscriber);
+			logic_gates[i]->SetInputSource(vdd_potential, Input_A);
+		} else if (input_a_gate_index != -1) {
+			std::shared_ptr<TransitionSource> nor_gate_output(logic_gates[input_a_gate_index]);
+			logic_gates[i]->SetInputSource(nor_gate_output, Input_A);
+			NORGateInput subscriber = NORGateInput{logic_gates[i], Input_A};
+			logic_gates[input_a_gate_index]->AddSubscriber(subscriber);
+		} else if (input_a_input_index != -1) {
+			std::shared_ptr<TransitionSource> circuit_input(circuit_inputs[input_a_input_index]);
+			logic_gates[i]->SetInputSource(circuit_input, Input_A);
+			NORGateInput subscriber = NORGateInput{logic_gates[i], Input_A};
+			circuit_inputs[input_a_input_index]->AddSubscriber(subscriber);
 		}
 
-		int input_b_nor_gate_index = GetNORGateIndexFromOutputName(input_b);
+		if (it->gate_type.compare("INV") == 0) {  // inverter does not have an input b
+			i++;
+			continue;
+		}
+		int input_b_nor_gate_index = GetGateIndexFromOutputName(input_b);
 		int input_b_nor_input_index = GetCircuitInputIndexFromOutputName(input_b);
 		if (input_b.compare("GND") == 0) {
-			nor_gates[i]->SetInputSource(gnd_potential, Input_B);
+			logic_gates[i]->SetInputSource(gnd_potential, Input_B);
 		} else if (input_b.compare("VDD") == 0) {
-			nor_gates[i]->SetInputSource(vdd_potential, Input_B);
+			logic_gates[i]->SetInputSource(vdd_potential, Input_B);
 		} else if (input_b_nor_gate_index != -1) {
-			std::shared_ptr<TransitionSource> nor_gate_output(nor_gates[input_b_nor_gate_index]);
-			nor_gates[i]->SetInputSource(nor_gate_output, Input_B);
-			NORGateInput subscriber = NORGateInput{nor_gates[i], Input_B};
-			nor_gates[input_b_nor_gate_index]->AddSubscriber(subscriber);
+			std::shared_ptr<TransitionSource> nor_gate_output(logic_gates[input_b_nor_gate_index]);
+			logic_gates[i]->SetInputSource(nor_gate_output, Input_B);
+			NORGateInput subscriber = NORGateInput{logic_gates[i], Input_B};
+			logic_gates[input_b_nor_gate_index]->AddSubscriber(subscriber);
 		} else if (input_b_nor_input_index != -1) {
 			std::shared_ptr<TransitionSource> circuit_input(circuit_inputs[input_b_nor_input_index]);
-			nor_gates[i]->SetInputSource(circuit_input, Input_B);
-			NORGateInput subscriber = NORGateInput{nor_gates[i], Input_B};
+			logic_gates[i]->SetInputSource(circuit_input, Input_B);
+			NORGateInput subscriber = NORGateInput{logic_gates[i], Input_B};
 			circuit_inputs[input_b_nor_input_index]->AddSubscriber(subscriber);
 		}
 
@@ -114,16 +128,16 @@ void CircuitSimulator::InitializeNORGates() {
 	}
 }
 
-int CircuitSimulator::GetNORGateIndexFromOutputName(const std::string& name) {
+int CircuitSimulator::GetGateIndexFromOutputName(const std::string& name) {
 	int left = 0;
-	int right = nor_gates.size() - 1;
+	int right = logic_gates.size() - 1;
 
 	while (left <= right) {
 		int middle = left + (right - left) / 2;
-		if (nor_gates[middle]->GetOutputName().compare(name) == 0) {
+		if (logic_gates[middle]->GetOutputName().compare(name) == 0) {
 			return middle;
 		} else {
-			if (nor_gates[middle]->GetOutputName().compare(name) > 0) {
+			if (logic_gates[middle]->GetOutputName().compare(name) > 0) {
 				right = middle - 1;
 			} else {
 				left = middle + 1;
@@ -163,77 +177,120 @@ int CircuitSimulator::GetCircuitInputIndexFromOutputName(const std::string& name
 void CircuitSimulator::DetermineGatesInitialValues() {
 	CMSat::SATSolver solver;
 	solver.set_num_threads(1);
-	solver.new_vars(1 + nor_gates.size());
+	solver.new_vars(1 + logic_gates.size());
 	std::vector<CMSat::Lit> clause;
 
 	// add a constant for true and false
 	clause.push_back(CMSat::Lit(0, false));
 	solver.add_clause(clause);
 
-	for (auto it = nor_gates.begin(); it != nor_gates.end(); it++) {
-		InitialValue input_a_initial = (*it)->GetInputSource(Input_A)->GetInitialOutputValue();
-		InitialValue input_b_initial = (*it)->GetInputSource(Input_B)->GetInitialOutputValue();
+	for (auto it = logic_gates.begin(); it != logic_gates.end(); it++) {
+		if ((*it)->GetType() == NOR) {
+			InitialValue input_a_initial = (*it)->GetInputSource(Input_A)->GetInitialOutputValue();
+			InitialValue input_b_initial = (*it)->GetInputSource(Input_B)->GetInitialOutputValue();
 
-		CMSat::Lit input_a_lit, input_a_lit_neg, input_b_lit, input_b_lit_neg;
-		if (input_a_initial == UNDEFINED) {
-			// input a is neither constant GDD/VDD nor connected to an input
-			std::string input_a_node_name = (*it)->GetInputSource(Input_A)->GetOutputName();
-			int input_a_nor_gate_index = GetNORGateIndexFromOutputName(input_a_node_name);
-			input_a_lit = CMSat::Lit(1 + input_a_nor_gate_index, false);
-			input_a_lit_neg = CMSat::Lit(1 + input_a_nor_gate_index, true);
-		} else if (input_a_initial == VDD) {
-			input_a_lit = CMSat::Lit(0, false);
-			input_a_lit_neg = CMSat::Lit(0, true);
-			(*it)->SetInitialInput(VDD, Input_A);
+			CMSat::Lit input_a_lit, input_a_lit_neg, input_b_lit, input_b_lit_neg;
+			if (input_a_initial == UNDEFINED) {
+				// input a is neither constant GDD/VDD nor connected to an input
+				std::string input_a_node_name = (*it)->GetInputSource(Input_A)->GetOutputName();
+				int input_a_gate_index = GetGateIndexFromOutputName(input_a_node_name);
+				input_a_lit = CMSat::Lit(1 + input_a_gate_index, false);
+				input_a_lit_neg = CMSat::Lit(1 + input_a_gate_index, true);
+			} else if (input_a_initial == VDD) {
+				input_a_lit = CMSat::Lit(0, false);
+				input_a_lit_neg = CMSat::Lit(0, true);
+				(*it)->SetInitialInput(VDD, Input_A);
+			} else {
+				input_a_lit = CMSat::Lit(0, true);
+				input_a_lit_neg = CMSat::Lit(0, false);
+				(*it)->SetInitialInput(GND, Input_A);
+			}
+
+			if (input_b_initial == UNDEFINED) {
+				// input a is neither constant GDD/VDD nor connected to an input
+				std::string input_b_node_name = (*it)->GetInputSource(Input_B)->GetOutputName();
+				int input_b_nor_gate_index = GetGateIndexFromOutputName(input_b_node_name);
+				input_b_lit = CMSat::Lit(1 + input_b_nor_gate_index, false);
+				input_b_lit_neg = CMSat::Lit(1 + input_b_nor_gate_index, true);
+			} else if (input_b_initial == VDD) {
+				input_b_lit = CMSat::Lit(0, false);
+				input_b_lit_neg = CMSat::Lit(0, true);
+				(*it)->SetInitialInput(VDD, Input_B);
+			} else {
+				input_b_lit = CMSat::Lit(0, true);
+				input_b_lit_neg = CMSat::Lit(0, false);
+				(*it)->SetInitialInput(GND, Input_B);
+			}
+
+			int output_gate_index = GetGateIndexFromOutputName((*it)->GetOutputName());
+			CMSat::Lit output_lit = CMSat::Lit(1 + output_gate_index, false);
+			CMSat::Lit output_lit_neg = CMSat::Lit(1 + output_gate_index, true);
+
+			/* for every NOR gate add the input output relation to the clause set:
+			*  		(InputA NOR InputB) XNOR Output
+			* which converted to cnf is equal to:
+			* 			(InputA OR InputB OR Output) AND
+			*			(!InputA OR !Output) AND
+			*			(!InputB OR !Output) AND
+			*/
+			std::vector<CMSat::Lit> first_clause;
+			first_clause.push_back(input_a_lit);
+			first_clause.push_back(input_b_lit);
+			first_clause.push_back(output_lit);
+
+			std::vector<CMSat::Lit> second_clause;
+			second_clause.push_back(input_a_lit_neg);
+			second_clause.push_back(output_lit_neg);
+
+			std::vector<CMSat::Lit> third_clause;
+			third_clause.push_back(input_b_lit_neg);
+			third_clause.push_back(output_lit_neg);
+
+			solver.add_clause(first_clause);
+			solver.add_clause(second_clause);
+			solver.add_clause(third_clause);
 		} else {
-			input_a_lit = CMSat::Lit(0, true);
-			input_a_lit_neg = CMSat::Lit(0, false);
-			(*it)->SetInitialInput(GND, Input_A);
+			InitialValue input_a_initial = (*it)->GetInputSource(Input_A)->GetInitialOutputValue();
+
+			CMSat::Lit input_a_lit, input_a_lit_neg;
+			if (input_a_initial == UNDEFINED) {
+				// input a is neither constant GDD/VDD nor connected to an input
+				std::string input_a_node_name = (*it)->GetInputSource(Input_A)->GetOutputName();
+				int input_a_gate_index = GetGateIndexFromOutputName(input_a_node_name);
+				input_a_lit = CMSat::Lit(1 + input_a_gate_index, false);
+				input_a_lit_neg = CMSat::Lit(1 + input_a_gate_index, true);
+			} else if (input_a_initial == VDD) {
+				input_a_lit = CMSat::Lit(0, false);
+				input_a_lit_neg = CMSat::Lit(0, true);
+				(*it)->SetInitialInput(VDD, Input_A);
+			} else {
+				input_a_lit = CMSat::Lit(0, true);
+				input_a_lit_neg = CMSat::Lit(0, false);
+				(*it)->SetInitialInput(GND, Input_A);
+			}
+
+			int output_gate_index = GetGateIndexFromOutputName((*it)->GetOutputName());
+			CMSat::Lit output_lit = CMSat::Lit(1 + output_gate_index, false);
+			CMSat::Lit output_lit_neg = CMSat::Lit(1 + output_gate_index, true);
+
+			/* for every Inverter add the input output relation to the clause set:
+			*  		(not InputA) XNOR Output
+			* which converted to cnf is equal to:
+			*			( InputA OR  Output) AND
+			*			(!InputA OR !Output) AND
+			*/
+
+			std::vector<CMSat::Lit> first_clause;
+			first_clause.push_back(input_a_lit);
+			first_clause.push_back(output_lit);
+
+			std::vector<CMSat::Lit> second_clause;
+			second_clause.push_back(input_a_lit_neg);
+			second_clause.push_back(output_lit_neg);
+
+			solver.add_clause(first_clause);
+			solver.add_clause(second_clause);
 		}
-
-		if (input_b_initial == UNDEFINED) {
-			// input a is neither constant GDD/VDD nor connected to an input
-			std::string input_b_node_name = (*it)->GetInputSource(Input_B)->GetOutputName();
-			int input_b_nor_gate_index = GetNORGateIndexFromOutputName(input_b_node_name);
-			input_b_lit = CMSat::Lit(1 + input_b_nor_gate_index, false);
-			input_b_lit_neg = CMSat::Lit(1 + input_b_nor_gate_index, true);
-		} else if (input_b_initial == VDD) {
-			input_b_lit = CMSat::Lit(0, false);
-			input_b_lit_neg = CMSat::Lit(0, true);
-			(*it)->SetInitialInput(VDD, Input_B);
-		} else {
-			input_b_lit = CMSat::Lit(0, true);
-			input_b_lit_neg = CMSat::Lit(0, false);
-			(*it)->SetInitialInput(GND, Input_B);
-		}
-
-		int output_gate_index = GetNORGateIndexFromOutputName((*it)->GetOutputName());
-		CMSat::Lit output_lit = CMSat::Lit(1 + output_gate_index, false);
-		CMSat::Lit output_lit_neg = CMSat::Lit(1 + output_gate_index, true);
-
-		/* for every NOR gate add the input output relation to the clause set:
-		 *  		(InputA NOR InputB) XNOR Output
-		 * which converted to cnf is equal to:
-		 * 			(InputA OR InputB OR Output) AND
-		 *			(!InputA OR !Output) AND
-		 *			(!InputB OR !Output) AND
-		 */
-		std::vector<CMSat::Lit> first_clause;
-		first_clause.push_back(input_a_lit);
-		first_clause.push_back(input_b_lit);
-		first_clause.push_back(output_lit);
-
-		std::vector<CMSat::Lit> second_clause;
-		second_clause.push_back(input_a_lit_neg);
-		second_clause.push_back(output_lit_neg);
-
-		std::vector<CMSat::Lit> third_clause;
-		third_clause.push_back(input_b_lit_neg);
-		third_clause.push_back(output_lit_neg);
-
-		solver.add_clause(first_clause);
-		solver.add_clause(second_clause);
-		solver.add_clause(third_clause);
 	}
 
 	bool solvable = solver.solve() == CMSat::l_True;
@@ -244,7 +301,7 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 
 	// recover the initial output values from the sat-solver model and apply them
 	int model_index = 1;
-	for (auto it = nor_gates.begin(); it != nor_gates.end(); it++) {
+	for (auto it = logic_gates.begin(); it != logic_gates.end(); it++) {
 		bool output_value = solver.get_model()[model_index] == CMSat::l_True;
 		InitialValue output_init_value;
 		if (output_value) {
@@ -272,7 +329,7 @@ void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<LogicGate
 void CircuitSimulator::InitializeTransferFunctions() {
 	std::vector<ParsedTFModel> parsed_tf_models = parser.GetTFModels();
 
-	if (parsed_tf_models.size() != 6) {
+	if (parsed_tf_models.size() != 12) {
 		std::cerr << "Transfer functions could not be parsed" << std::endl;
 		throw std::exception();
 	}
@@ -280,19 +337,30 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions = std::make_shared<TFCollection>();
 
 	transfer_functions->sis_input_a_falling = InitializeTransferFunction(parsed_tf_models[0], SIS, AFALLING);
-	transfer_functions->sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[1], SIS, ARISING);
-	transfer_functions->sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[2], SIS, OTHER);
-	transfer_functions->sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[3], SIS, OTHER);
+	transfer_functions->sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[2], SIS, ARISING);
+	transfer_functions->sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[4], SIS, BFALLING);
+	transfer_functions->sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[6], SIS, BRISING);
+	transfer_functions->inverter_falling = InitializeTransferFunction(parsed_tf_models[8], SIS, INVERTERFALLING);
+	transfer_functions->inverter_rising = InitializeTransferFunction(parsed_tf_models[10], SIS, INVERTERRISING);
+
+	transfer_functions->sis_input_a_falling->ReadBoundaryFile(parsed_tf_models[1].file_name);
+	transfer_functions->sis_input_a_rising->ReadBoundaryFile(parsed_tf_models[3].file_name);
+	transfer_functions->sis_input_b_falling->ReadBoundaryFile(parsed_tf_models[5].file_name);
+	transfer_functions->sis_input_b_rising->ReadBoundaryFile(parsed_tf_models[7].file_name);
+	transfer_functions->inverter_falling->ReadBoundaryFile(parsed_tf_models[9].file_name);
+	transfer_functions->inverter_rising->ReadBoundaryFile(parsed_tf_models[11].file_name);
 
 	// TODO: make this configurable
 	double max_shift = 0.15;
-	TransitionParameters default_prev_out_rising = {105, max_shift};
-	TransitionParameters default_prev_out_falling = {-150, max_shift};
+	TransitionParameters default_prev_out_rising = {100, max_shift};
+	TransitionParameters default_prev_out_falling = {-100, max_shift};
 
-	transfer_functions->sis_input_a_falling->SetDefaultValues(default_prev_out_rising, max_shift);
-	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, max_shift);
-	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, max_shift);
-	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, max_shift);
+	transfer_functions->sis_input_a_falling->SetDefaultValues(default_prev_out_rising, 0.15);
+	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, 0.15);
+	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, 0.12);
+	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, 0.12);
+	transfer_functions->inverter_falling->SetDefaultValues(default_prev_out_rising, 0.15);
+	transfer_functions->inverter_rising->SetDefaultValues(default_prev_out_falling, 0.15);
 }
 
 std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type, ANNSISTYPE ty_type) {
@@ -340,7 +408,7 @@ void CircuitSimulator::WriteNOROutputsToFile() {
 	auto parsed_outputs = parser.GetOutputs();
 	for (auto it = parsed_outputs.begin(); it != parsed_outputs.end(); it++) {
 		std::string output_name = it->node_name;
-		for (auto nor_gate = nor_gates.begin(); nor_gate != nor_gates.end(); nor_gate++) {
+		for (auto nor_gate = logic_gates.begin(); nor_gate != logic_gates.end(); nor_gate++) {
 			if ((*nor_gate)->GetOutputName().compare(output_name) == 0) {
 				output_file << output_name << std::endl;
 				auto output_transitions = (*nor_gate)->GetOutputTransitions();

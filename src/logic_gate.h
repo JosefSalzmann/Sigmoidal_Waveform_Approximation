@@ -36,7 +36,10 @@ enum Input {
 enum ANNSISTYPE {
 	AFALLING,
 	ARISING,
-	OTHER
+	BFALLING,
+	BRISING,
+	INVERTERFALLING,
+	INVERTERRISING
 };
 
 class LogicGate;
@@ -79,6 +82,7 @@ class TransferFunction {
    public:
 	virtual ~TransferFunction() {}
 	virtual void ReadModel(const std::string& file_name) = 0;
+	virtual void ReadBoundaryFile(const std::string& file_name) = 0;
 	virtual TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) = 0;
 	virtual void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) = 0;
 };
@@ -88,6 +92,8 @@ struct TFCollection {
 	std::shared_ptr<TransferFunction> sis_input_a_rising;
 	std::shared_ptr<TransferFunction> sis_input_b_falling;
 	std::shared_ptr<TransferFunction> sis_input_b_rising;
+	std::shared_ptr<TransferFunction> inverter_falling;
+	std::shared_ptr<TransferFunction> inverter_rising;
 };
 
 #include "gnd_potential.h"
@@ -95,7 +101,7 @@ struct TFCollection {
 
 class LogicGate : public TransitionSource, public std::enable_shared_from_this<LogicGate> {
    private:
-	FunctionType logic_function;
+	FunctionType gate_type;
 	std::string gate_name;
 	std::string output_node_name;
 	std::shared_ptr<TransitionSource> input_a_source;
@@ -119,11 +125,13 @@ class LogicGate : public TransitionSource, public std::enable_shared_from_this<L
 
    public:
 	LogicGate(){};
-	LogicGate(const std::string& gate_name,
+	LogicGate(const FunctionType gate_type,
+	          const std::string& gate_name,
 	          const std::string& output_node_name,
 	          const std::shared_ptr<TFCollection>& transfer_functions,
 	          double default_falling_steepness,
-	          double default_rising_steepness) : gate_name{gate_name},
+	          double default_rising_steepness) : gate_type{gate_type},
+	                                             gate_name{gate_name},
 	                                             output_node_name{output_node_name},
 	                                             input_a_transitions{},
 	                                             input_b_transitions{},
@@ -150,7 +158,10 @@ class LogicGate : public TransitionSource, public std::enable_shared_from_this<L
 	void RemoveOutputTransition(std::shared_ptr<Transition> transition);
 	void RemoveInputTransition(std::shared_ptr<Transition> transition, Input input);
 	void PropagateTransition(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
+	void PropagateTransitionNOR(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
+	void PropagateTransitionINV(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
 	std::shared_ptr<TransitionSource>& GetInputSource(Input input);
+	FunctionType GetType();
 };
 
 #endif
