@@ -301,7 +301,7 @@ void LogicGate::CancelTransition(const std::shared_ptr<Transition>& transition, 
 		transition->cancels_tr->cancelation = false;
 		PLOG_DEBUG << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
 		           << " at Output " << transition->cancels_tr->source->GetOutputName() << ".";
-		schedule->AddFutureTransition(transition->cancels_tr);
+		// schedule->AddFutureTransition(transition->cancels_tr);
 	}
 	transition->cancelation = true;
 	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {

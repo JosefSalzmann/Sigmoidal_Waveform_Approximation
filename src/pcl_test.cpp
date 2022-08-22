@@ -12,19 +12,19 @@
 
 #include <iostream>
 
-void PCLTest::test() {
+void PCLTest::ComputeConcaveHull(const std::string& pcd_file_name) {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>),
 	    cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>),
 	    cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PCDReader reader;
 
-	reader.read("falling_input_LUT.pcd", *cloud);
+	reader.read(pcd_file_name, *cloud);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::ConcaveHull<pcl::PointXYZ> chull;
 	std::vector<pcl::Vertices> polygons;
 	chull.setInputCloud(cloud);
-	chull.setAlpha(20);
+	chull.setAlpha(20);  // concave hull parameter (how far can points be away from each other and still be counted as connected)
 	chull.reconstruct(*cloud_hull, polygons);
 
 	std::cerr << "Concave hull has: " << cloud_hull->size()
@@ -33,15 +33,21 @@ void PCLTest::test() {
 	pcl::PCDWriter writer;
 	// writer.write("rising_input_LUT_concave_hull.pcd", *cloud_hull, false);
 
-	std::cout << "OFF" << std::endl
-	          << (int)cloud_hull->points.size() << " " << polygons.size() << " 0" << std::endl;
+	std::stringstream ss;
+	ss << "OFF" << std::endl
+	   << (int)cloud_hull->points.size() << " " << polygons.size() << " 0" << std::endl;
 
-	std::cout << std::endl;
+	ss << std::endl;
 	for (int i = 0; i < (int)cloud_hull->points.size(); i++) {
-		std::cout << cloud_hull->points[i].x << " " << cloud_hull->points[i].y << " " << cloud_hull->points[i].z << std::endl;
+		ss << cloud_hull->points[i].x << " " << cloud_hull->points[i].y << " " << cloud_hull->points[i].z << std::endl;
 	}
 
 	for (int i = 0; i < (int)polygons.size(); i++) {
-		std::cout << "3  " << polygons[i].vertices[0] << " " << polygons[i].vertices[1] << " " << polygons[i].vertices[2] << std::endl;
+		ss << "3  " << polygons[i].vertices[0] << " " << polygons[i].vertices[1] << " " << polygons[i].vertices[2] << std::endl;
 	}
+
+	std::ofstream output_file;
+	output_file.open("output.off");
+	output_file << ss.str();
+	output_file.close();
 }

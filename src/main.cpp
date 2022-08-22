@@ -13,15 +13,17 @@ void Usage(const std::string& prog_name) {
 	std::cout << prog_name << " [Options]" << std::endl
 	          << "Options:" << std::endl
 	          << "-h	Print this message" << std::endl
-	          << "-c	Path to circuit file" << std::endl;
+	          << "-c	Path to circuit file" << std::endl
+	          << "-o	Computer the concave hull of the specified pcd file" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
-	// PCLTest pcl_test;
-	// pcl_test.test();
 	std::string file_name;
+	bool compute_concave_hull = false;
 	while (true) {
-		switch (getopt(argc, argv, "c:h")) {
+		switch (getopt(argc, argv, "o:c:h")) {
+		case 'o':
+			compute_concave_hull = true;
 		case 'c':
 			file_name = std::string(optarg);
 			break;
@@ -33,6 +35,12 @@ int main(int argc, char* argv[]) {
 			return 0;
 		}
 		break;
+	}
+
+	if (compute_concave_hull) {
+		PCLTest pcl_test;
+		pcl_test.ComputeConcaveHull(file_name);
+		return 0;
 	}
 
 	plog::init(plog::debug, "efficient_mis_modelling.log");

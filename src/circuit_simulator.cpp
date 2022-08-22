@@ -56,7 +56,7 @@ void CircuitSimulator::InitializeInputs() {
 
 /*
  * Set the  input sources and the subscribers for all NOR Gates and the
- * subscribers of the inputs. 
+ * subscribers of the inputs.
  */
 void CircuitSimulator::InitializeNORGates() {
 	std::vector<ParsedGate> parsed_gates = parser.GetGates();
@@ -227,12 +227,12 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 			CMSat::Lit output_lit_neg = CMSat::Lit(1 + output_gate_index, true);
 
 			/* for every NOR gate add the input output relation to the clause set:
-			*  		(InputA NOR InputB) XNOR Output
-			* which converted to cnf is equal to:
-			* 			(InputA OR InputB OR Output) AND
-			*			(!InputA OR !Output) AND
-			*			(!InputB OR !Output) AND
-			*/
+			 *  		(InputA NOR InputB) XNOR Output
+			 * which converted to cnf is equal to:
+			 * 			(InputA OR InputB OR Output) AND
+			 *			(!InputA OR !Output) AND
+			 *			(!InputB OR !Output) AND
+			 */
 			std::vector<CMSat::Lit> first_clause;
 			first_clause.push_back(input_a_lit);
 			first_clause.push_back(input_b_lit);
@@ -274,11 +274,11 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 			CMSat::Lit output_lit_neg = CMSat::Lit(1 + output_gate_index, true);
 
 			/* for every Inverter add the input output relation to the clause set:
-			*  		(not InputA) XNOR Output
-			* which converted to cnf is equal to:
-			*			( InputA OR  Output) AND
-			*			(!InputA OR !Output) AND
-			*/
+			 *  		(not InputA) XNOR Output
+			 * which converted to cnf is equal to:
+			 *			( InputA OR  Output) AND
+			 *			(!InputA OR !Output) AND
+			 */
 
 			std::vector<CMSat::Lit> first_clause;
 			first_clause.push_back(input_a_lit);
@@ -316,7 +316,7 @@ void CircuitSimulator::DetermineGatesInitialValues() {
 }
 
 /*
- * Set the initial input values of the gates subscribers, 
+ * Set the initial input values of the gates subscribers,
  * by setting the initial values of the inputs the initial output value is derived automatically.
  */
 void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<LogicGate> nor_gate, InitialValue initial_value) {
@@ -355,12 +355,12 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	TransitionParameters default_prev_out_rising = {100, max_shift};
 	TransitionParameters default_prev_out_falling = {-100, max_shift};
 
-	transfer_functions->sis_input_a_falling->SetDefaultValues(default_prev_out_rising, 0.15);
-	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, 0.15);
-	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, 0.12);
-	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, 0.12);
-	transfer_functions->inverter_falling->SetDefaultValues(default_prev_out_rising, 0.15);
-	transfer_functions->inverter_rising->SetDefaultValues(default_prev_out_falling, 0.15);
+	transfer_functions->sis_input_a_falling->SetDefaultValues(default_prev_out_rising, 0.2);
+	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, 0.2);
+	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, max_shift);
+	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, max_shift);
+	transfer_functions->inverter_falling->SetDefaultValues(default_prev_out_rising, max_shift);
+	transfer_functions->inverter_rising->SetDefaultValues(default_prev_out_falling, max_shift);
 }
 
 std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type, ANNSISTYPE ty_type) {
