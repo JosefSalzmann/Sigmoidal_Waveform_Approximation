@@ -151,8 +151,8 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 	// do SIS stuff
 
 	/* if the last transition of the other input was rising i.e. other input is now at
-	* VDD, the transition does not propagate
-	*/
+	 * VDD, the transition does not propagate
+	 */
 	if ((input == Input_A && latest_valid_input_b_tr->parameters.steepness > 0) ||
 	    (input == Input_B && latest_valid_input_a_tr->parameters.steepness > 0)) {
 		return;
@@ -172,8 +172,8 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 	transition->children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
 
 	/*
-	* Check for cancelation
-	*/
+	 * Check for cancelation
+	 */
 	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
 		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
 		// 	int debug = 0;
@@ -198,9 +198,6 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
 		return;
 	}
 
-	PLOG_DEBUG << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
-	           << " at Gate " << this->gate_name << ".";
-
 	std::shared_ptr<Transition> latest_valid_output_tr;
 	std::shared_ptr<Transition> second_latest_valid_output_tr;
 
@@ -217,6 +214,10 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
 		}
 	}
 
+	PLOG_DEBUG << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	           << " at Gate " << this->gate_name << "."
+	           << " Latest Valid Output Transition is: " << std::to_string(latest_valid_output_tr->parameters.steepness);
+
 	input_a_transitions.push_back(transition);
 
 	TransitionParameters generated_outp_tr_params;
@@ -230,8 +231,8 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
 	transition->children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
 
 	/*
-	* Check for cancelation
-	*/
+	 * Check for cancelation
+	 */
 	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
 		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
 		// 	int debug = 0;
@@ -290,7 +291,7 @@ TransitionParameters LogicGate::CaclulateSISParametersAtInput(TransitionParamete
 }
 
 /*
- * Mark a transition and all its children as canceled. If a transition gets canceled that was 
+ * Mark a transition and all its children as canceled. If a transition gets canceled that was
  * the part of a MIS propagation, we have to reschedule the other transitions of the MIS propgagation
  * that did not get canceled.
  */
@@ -301,7 +302,9 @@ void LogicGate::CancelTransition(const std::shared_ptr<Transition>& transition, 
 		transition->cancels_tr->cancelation = false;
 		PLOG_DEBUG << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
 		           << " at Output " << transition->cancels_tr->source->GetOutputName() << ".";
-		// schedule->AddFutureTransition(transition->cancels_tr);
+		if (!schedule->TransitionIsScheduled(transition->cancels_tr)) {
+			schedule->AddFutureTransition(transition->cancels_tr);
+		}
 	}
 	transition->cancelation = true;
 	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {
@@ -338,7 +341,7 @@ bool LogicGate::CheckCancelation(TransitionParameters transition1, TransitionPar
 		test_points[i] = CalculatePulseValue(vdd, start_time + (double)i * time_step, transition1, transition2);
 	}
 
-	if (transition1.steepness > 0) {  //search for the maximum value of the testpoints
+	if (transition1.steepness > 0) {  // search for the maximum value of the testpoints
 		double max_value = -INFINITY;
 		for (int i = 0; i < n_points; i++) {
 			if (test_points[i] > max_value) {
@@ -348,7 +351,7 @@ bool LogicGate::CheckCancelation(TransitionParameters transition1, TransitionPar
 		if (max_value < vdd / 2) {
 			return true;
 		}
-	} else {  //search for the minimum value of the testpoints
+	} else {  // search for the minimum value of the testpoints
 		double min_value = INFINITY;
 		for (int i = 0; i < n_points; i++) {
 			if (test_points[i] < min_value) {

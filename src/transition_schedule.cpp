@@ -54,3 +54,14 @@ std::shared_ptr<Transition> TransitionSchedule::ConsumeFirstTransition() {
 bool TransitionSchedule::TransitionSorter(const std::shared_ptr<Transition>& lhs, const std::shared_ptr<Transition>& rhs) {
 	return lhs->parameters.shift > rhs->parameters.shift;
 }
+
+/**
+ * @brief Check if a transition is scheduled as future transitoin
+ *
+ * @param transition
+ * @return true
+ * @return false
+ */
+bool TransitionSchedule::TransitionIsScheduled(const std::shared_ptr<Transition>& transition) {
+	return std::find(future_transitions.begin(), future_transitions.end(), transition) != future_transitions.end();
+}

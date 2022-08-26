@@ -1,6 +1,6 @@
 /*
-*   Transition Schedule class
-*/
+ *   Transition Schedule class
+ */
 #ifndef TRANSITION_SCHEDULE_H
 #define TRANSITION_SCHEDULE_H
 #include <memory>
@@ -25,5 +25,6 @@ class TransitionSchedule {
 	bool HasFutureTransitions();
 	void CancelTransition(std::shared_ptr<Transition> first_cancelation_partner, std::shared_ptr<Transition> second_cancelation_partner);
 	static bool TransitionSorter(const std::shared_ptr<Transition>& lhs, const std::shared_ptr<Transition>& rhs);
+	bool TransitionIsScheduled(const std::shared_ptr<Transition>& transition);
 };
 #endif
