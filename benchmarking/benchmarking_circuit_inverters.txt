@@ -1,0 +1,45 @@
+INPUTS
+INA InA.csv
+
+GATES
+INV XA_1 OA_1 INA
+INV XA_2 OA_2 OA_1
+INV XA_3 OA_3 OA_2
+INV XA_5 OA_5 OA_4
+INV XA_4 OA_4 OA_3
+INV XA_6 OA_6 OA_5
+INV XA_7 OA_7 OA_6
+INV XA_8 OA_8 OA_7
+INV XA_9 OA_9 OA_8
+INV XA_10 OA_10 OA_9
+INV XA_11 OA_11 OA_10
+INV XA_12 OA_12 OA_11
+INV XA_13 OA_13 OA_12
+INV XA_14 OA_14 OA_13
+INV XA_15 OA_15 OA_14
+
+OUTPUTS
+OA_1
+OA_2
+OA_3
+OA_4
+OA_5
+OA_6
+OA_7
+OA_8
+OA_9
+OA_10
+
+TRANSFERFUNCTIONS
+SIS_A_F ANN tfs/SIS_A_falling_model
+SIS_A_F OFF tfs/SIS_A_falling_input_stretched.off
+SIS_A_R ANN tfs/SIS_A_rising_model
+SIS_A_R OFF tfs/SIS_A_rising_input_stretched.off
+SIS_B_F ANN tfs/SIS_B_falling_model
+SIS_B_F OFF tfs/SIS_B_falling_input_stretched.off
+SIS_B_R ANN tfs/SIS_B_rising_model
+SIS_B_R OFF tfs/SIS_B_rising_input_stretched.off
+Inverter_F ANN tfs/Inverter_falling_model
+Inverter_F OFF tfs/Inverter_falling_input_stretched.off
+Inverter_R ANN tfs/Inverter_rising_model
+Inverter_R OFF tfs/Inverter_rising_input_stretched.off

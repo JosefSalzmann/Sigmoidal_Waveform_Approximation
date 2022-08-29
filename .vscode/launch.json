@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${fileDirname}/../${fileBasenameNoExtension}",
             "args": [
-                "-c./../benchmarking/benchmarking_circuit.txt"
+                "-c./../benchmarking/benchmarking_circuit_inverters.txt"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
