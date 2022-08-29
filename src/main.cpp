@@ -3,6 +3,7 @@
 #include <plog/Log.h>
 
 #include <chrono>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -18,6 +19,7 @@ void Usage(const std::string& prog_name) {
 }
 
 int main(int argc, char* argv[]) {
+	auto program_start = std::chrono::high_resolution_clock::now();
 	std::string file_name;
 	bool compute_concave_hull = false;
 	while (true) {
@@ -56,10 +58,16 @@ int main(int argc, char* argv[]) {
 	simulator.SimulateCircuit();
 	simulator.WriteNOROutputsToFile();
 
-	auto simulation_stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> duration_double = simulation_stop - simulation_start;
-	std::cerr << std::endl
-	          << "Simulation took " << duration_double.count() << "ms" << std::endl;
-
+	auto program_end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> setup_duration = simulation_start - program_start;
+	std::chrono::duration<double, std::milli> simulation_duration = program_end - simulation_start;
+	std::chrono::duration<double, std::milli> program_duration = program_end - program_start;
+	char output_char[200];
+	sprintf(output_char, "Simulation setup took\t%15.2fms\nSimulation itself took\t%15.2fms\nWhole program took\t%15.2fms\n",
+	        setup_duration.count(), simulation_duration.count(), program_duration.count());
+	std::cout << std::endl
+	          << "Summary of spent time" << std::endl
+	          << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl
+	          << output_char;
 	return 0;
 }

@@ -1,6 +1,7 @@
 #include "boundary_watchdog.h"
 
 void BoundaryWatchdog::LoadOffFile(std::string file) {
+	std::cout << "Reading " << file << std::endl;
 	std::vector<K::Point_3> points;
 	std::vector<std::vector<std::size_t>> polygons;
 	// read in off file in single points and polygons
