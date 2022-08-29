@@ -20,7 +20,7 @@ for dir in circuit_dirs:
     command = "cp " + target_dir + "/" + dir + "/InA.csv ./benchmarking/InA.csv"
     print(command)
     code = subprocess.call(command, shell=True)
-    command = "./main -c benchmarking/benchmarking_circuit.txt"
+    command = "./main -c benchmarking/benchmarking_circuit_inverters_100_stages.txt >> tool_timing.txt"
     print(command)
     code = subprocess.call(command, shell=True)
     f = open("benchmarking/InA.csv", "r")
@@ -35,5 +35,12 @@ for dir in circuit_dirs:
     code = subprocess.call(command, shell=True)
     command = "cp tool_prediction.txt " + \
         target_dir + "/" + dir + "/tool_prediction.txt"
+    print(command)
+    code = subprocess.call(command, shell=True)
+    command = "cp tool_timing.txt " + \
+        target_dir + "/" + dir + "/tool_timing.txt"
+    print(command)
+    code = subprocess.call(command, shell=True)
+    command = "rm tool_timing.txt"
     print(command)
     code = subprocess.call(command, shell=True)
