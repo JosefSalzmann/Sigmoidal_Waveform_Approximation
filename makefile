@@ -24,7 +24,6 @@ LIBS = -L. -lcryptominisat5 -isystem libtensorflow2 -ltensorflow -isystem cppflo
 		/usr/lib/x86_64-linux-gnu/libpcl_search.so /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so
 SRC_DIR = ./src
 OBJ_DIR = ./obj
-TEST_DIR = ./testing
 MAIN = main
 OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/circuit_file_parser.o \
@@ -51,17 +50,10 @@ $(OBJ_DIR)/pcl_test.o : $(SRC_DIR)/pcl_test.cpp
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all: $(MAIN) all-tests
+all: $(MAIN)
 
 clean:
-	rm $(OBJ_DIR)/*.o $(MAIN) runTests
+	rm $(OBJ_DIR)/*.o $(MAIN)
 
 check:
 	cppcheck $(SRC_DIR)/*cpp --language=c++ --enable=all --suppress=missingIncludeSystem
-
-all-tests:
-	cmake $(TEST_DIR)/CMakeLists.txt
-	(cd $(TEST_DIR) && make)
-	mv $(TEST_DIR)/runTests .
-tests:
-	./runTests 2>/dev/null

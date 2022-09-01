@@ -1,6 +1,0 @@
-* test multiple gates with same output node
-INPUTS
-OUT1 asdf.txt
-GATES
-X1 OUT1 GND GND
-OUTPUTS
