@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <cryptominisat5/cryptominisat.h>
-#include <plog/Log.h>
 
 #include <algorithm>
 #include <fstream>
@@ -68,11 +67,11 @@ void CircuitSimulator::InitializeNORGates() {
 		} else if (it->gate_type.compare("INV") == 0) {
 			gate_type = INV;
 		} else {
-			PLOG_DEBUG << "Unknown gate type:" << it->gate_type;
+			std::cout << "Unknown gate type:" << it->gate_type;
 			exit(-1);
 		}
 		// TODO: make default steepnesses configurable
-		std::shared_ptr<LogicGate> logic_gate(new LogicGate(gate_type, it->gate_name, it->ouput_name, transfer_functions, -100, 100));
+		std::shared_ptr<LogicGate> logic_gate(new LogicGate(gate_type, it->gate_name, it->ouput_name, transfer_functions, -100, 100, logging));
 		logic_gates.push_back(logic_gate);
 	}
 
@@ -343,6 +342,13 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->inverter_falling = InitializeTransferFunction(parsed_tf_models[8], SIS, INVERTERFALLING);
 	transfer_functions->inverter_rising = InitializeTransferFunction(parsed_tf_models[10], SIS, INVERTERRISING);
 
+	transfer_functions->sis_input_a_falling->SetName("sis_input_a_falling");
+	transfer_functions->sis_input_a_rising->SetName("sis_input_a_rising");
+	transfer_functions->sis_input_b_falling->SetName("sis_input_b_falling");
+	transfer_functions->sis_input_b_rising->SetName("sis_input_b_rising");
+	transfer_functions->inverter_falling->SetName("inverter_falling");
+	transfer_functions->inverter_rising->SetName("inverter_rising");
+
 	transfer_functions->sis_input_a_falling->ReadBoundaryFile(parsed_tf_models[1].file_name);
 	transfer_functions->sis_input_a_rising->ReadBoundaryFile(parsed_tf_models[3].file_name);
 	transfer_functions->sis_input_b_falling->ReadBoundaryFile(parsed_tf_models[5].file_name);
@@ -357,8 +363,8 @@ void CircuitSimulator::InitializeTransferFunctions() {
 
 	transfer_functions->sis_input_a_falling->SetDefaultValues(default_prev_out_rising, 0.2);
 	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, 0.2);
-	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, max_shift);
-	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, max_shift);
+	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, 0.2);
+	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, 0.2);
 	transfer_functions->inverter_falling->SetDefaultValues(default_prev_out_rising, max_shift);
 	transfer_functions->inverter_rising->SetDefaultValues(default_prev_out_falling, max_shift);
 }
@@ -375,7 +381,7 @@ std::shared_ptr<TransferFunction> CircuitSimulator::InitializeTransferFunction(P
 
 	} else if (tf_approach.compare("ANN") == 0) {
 		if (model_type == SIS) {
-			transfer_function = std::make_shared<ANNSISTransferFunction>(ty_type);
+			transfer_function = std::make_shared<ANNSISTransferFunction>(ty_type, logging);
 		} else {
 			std::cerr << "ANN MSI not yet supported." << std::endl;
 			throw std::exception();

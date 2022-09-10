@@ -1,6 +1,6 @@
 /*
-*   Logic Gate class
-*/
+ *   Logic Gate class
+ */
 #ifndef LOGIC_GATE_H
 #define LOGIC_GATE_H
 
@@ -85,6 +85,7 @@ class TransferFunction {
 	virtual void ReadBoundaryFile(const std::string& file_name) = 0;
 	virtual TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) = 0;
 	virtual void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) = 0;
+	virtual void SetName(const std::string& transferfunction_name) = 0;
 };
 
 struct TFCollection {
@@ -116,6 +117,7 @@ class LogicGate : public TransitionSource, public std::enable_shared_from_this<L
 	std::shared_ptr<TFCollection> transfer_functions;
 	std::shared_ptr<Transition> default_falling_tr;
 	std::shared_ptr<Transition> default_rising_tr;
+	bool logging;
 
 	void CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule);
 	TransitionParameters CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input);
@@ -130,19 +132,21 @@ class LogicGate : public TransitionSource, public std::enable_shared_from_this<L
 	          const std::string& output_node_name,
 	          const std::shared_ptr<TFCollection>& transfer_functions,
 	          double default_falling_steepness,
-	          double default_rising_steepness) : gate_type{gate_type},
-	                                             gate_name{gate_name},
-	                                             output_node_name{output_node_name},
-	                                             input_a_transitions{},
-	                                             input_b_transitions{},
-	                                             output_transitions{},
-	                                             initial_value_input_a{UNDEFINED},
-	                                             initial_value_input_b{UNDEFINED},
-	                                             initial_value_output{UNDEFINED},
-	                                             subscribers{},
-	                                             transfer_functions{transfer_functions},
-	                                             default_falling_tr{std::make_shared<Transition>()},
-	                                             default_rising_tr{std::make_shared<Transition>()} {
+	          double default_rising_steepness,
+	          bool logging) : gate_type{gate_type},
+	                          gate_name{gate_name},
+	                          output_node_name{output_node_name},
+	                          input_a_transitions{},
+	                          input_b_transitions{},
+	                          output_transitions{},
+	                          initial_value_input_a{UNDEFINED},
+	                          initial_value_input_b{UNDEFINED},
+	                          initial_value_output{UNDEFINED},
+	                          subscribers{},
+	                          transfer_functions{transfer_functions},
+	                          default_falling_tr{std::make_shared<Transition>()},
+	                          default_rising_tr{std::make_shared<Transition>()},
+	                          logging{logging} {
 		default_falling_tr->parameters.steepness = default_falling_steepness;
 		default_falling_tr->parameters.shift = -DBL_MAX;
 		default_rising_tr->parameters.steepness = default_rising_steepness;

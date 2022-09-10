@@ -15,28 +15,40 @@ void Usage(const std::string& prog_name) {
 	          << "Options:" << std::endl
 	          << "-h	Print this message" << std::endl
 	          << "-c	Path to circuit file" << std::endl
-	          << "-o	Computer the concave hull of the specified pcd file" << std::endl;
+	          << "-o	Computer the concave hull of the specified pcd file" << std::endl
+	          << "-l	Write log to the specified file" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
 	auto program_start = std::chrono::high_resolution_clock::now();
-	std::string file_name;
-	bool compute_concave_hull = false;
-	while (true) {
-		switch (getopt(argc, argv, "o:c:h")) {
+	std::string file_name, log_name;
+	bool compute_concave_hull = false, logging = false;
+	int iterations = 0;
+	while (iterations + 1 < argc) {
+		switch (getopt(argc, argv, "o:c:l:h")) {
 		case 'o':
 			compute_concave_hull = true;
 		case 'c':
 			file_name = std::string(optarg);
 			break;
+		case 'l':
+			logging = true;
+			log_name = std::string(optarg);
+			break;
 		case '?':
 		case 'h':
-		case -1:
-		default:
 			Usage(std::string(argv[0]));
 			return 0;
+		case -1:
+		default:
+			break;
 		}
-		break;
+		iterations++;
+	}
+
+	if (file_name.length() == 0) {
+		Usage(std::string(argv[0]));
+		return 0;
 	}
 
 	if (compute_concave_hull) {
@@ -45,8 +57,10 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	plog::init(plog::debug, "efficient_mis_modelling.log");
-	CircuitSimulator simulator = CircuitSimulator();
+	if (logging) {
+		plog::init(plog::debug, log_name.c_str());
+	}
+	CircuitSimulator simulator = CircuitSimulator(logging);
 	try {
 		simulator.InitializeCircuit(file_name);
 	} catch (const std::exception& e) {

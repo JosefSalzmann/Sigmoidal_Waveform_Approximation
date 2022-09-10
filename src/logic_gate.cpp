@@ -104,8 +104,8 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 		return;
 	}
 
-	PLOG_DEBUG << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
-	           << " at Gate " << this->gate_name << ".";
+	PLOG_DEBUG_IF(logging) << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	                       << " at Gate " << this->gate_name << ".";
 
 	std::shared_ptr<Transition> latest_valid_input_a_tr;
 	std::shared_ptr<Transition> latest_valid_input_b_tr;
@@ -178,15 +178,15 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
 		// 	int debug = 0;
 		// }
-		PLOG_DEBUG << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-		           << " at Gate " << this->gate_name << ".";
+		PLOG_DEBUG_IF(logging) << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		                       << " at Gate " << this->gate_name << ".";
 		CancelTransition(latest_valid_output_tr, schedule);
 		generated_outp_tr->cancelation = true;
 		generated_outp_tr->is_responsible_for_cancelation = true;
 		generated_outp_tr->cancels_tr = latest_valid_output_tr;
 	} else {
-		PLOG_DEBUG << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-		           << " at Gate " << this->gate_name << ".";
+		PLOG_DEBUG_IF(logging) << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		                       << " at Gate " << this->gate_name << ".";
 	}
 
 	schedule->AddFutureTransition(generated_outp_tr);
@@ -214,9 +214,9 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
 		}
 	}
 
-	PLOG_DEBUG << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
-	           << " at Gate " << this->gate_name << "."
-	           << " Latest Valid Output Transition is: " << std::to_string(latest_valid_output_tr->parameters.steepness);
+	PLOG_DEBUG_IF(logging) << "Received Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	                       << " at Gate " << this->gate_name << "."
+	                       << " Latest Valid Output Transition is: " << std::to_string(latest_valid_output_tr->parameters.steepness);
 
 	input_a_transitions.push_back(transition);
 
@@ -237,15 +237,15 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
 		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
 		// 	int debug = 0;
 		// }
-		PLOG_DEBUG << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-		           << " at Gate " << this->gate_name << ".";
+		PLOG_DEBUG_IF(logging) << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		                       << " at Gate " << this->gate_name << ".";
 		CancelTransition(latest_valid_output_tr, schedule);
 		generated_outp_tr->cancelation = true;
 		generated_outp_tr->is_responsible_for_cancelation = true;
 		generated_outp_tr->cancels_tr = latest_valid_output_tr;
 	} else {
-		PLOG_DEBUG << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
-		           << " at Gate " << this->gate_name << ".";
+		PLOG_DEBUG_IF(logging) << "Generatred Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
+		                       << " at Gate " << this->gate_name << ".";
 	}
 
 	schedule->AddFutureTransition(generated_outp_tr);
@@ -296,12 +296,12 @@ TransitionParameters LogicGate::CaclulateSISParametersAtInput(TransitionParamete
  * that did not get canceled.
  */
 void LogicGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
-	PLOG_DEBUG << "Canceled Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
-	           << " at Output " << transition->source->GetOutputName() << ".";
+	PLOG_DEBUG_IF(logging) << "Canceled Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
+	                       << " at Output " << transition->source->GetOutputName() << ".";
 	if (transition->is_responsible_for_cancelation) {
 		transition->cancels_tr->cancelation = false;
-		PLOG_DEBUG << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
-		           << " at Output " << transition->cancels_tr->source->GetOutputName() << ".";
+		PLOG_DEBUG_IF(logging) << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
+		                       << " at Output " << transition->cancels_tr->source->GetOutputName() << ".";
 		if (!schedule->TransitionIsScheduled(transition->cancels_tr)) {
 			schedule->AddFutureTransition(transition->cancels_tr);
 		}

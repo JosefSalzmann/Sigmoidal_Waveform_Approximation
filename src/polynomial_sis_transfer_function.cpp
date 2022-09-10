@@ -126,7 +126,7 @@ std::vector<std::string> PolynomialSISTransferFunction::GetLineSplit(const std::
 }
 
 /*
- * SIS Transfer function: two TransitionParameters as input, namely current input parameters and the parameters 
+ * SIS Transfer function: two TransitionParameters as input, namely current input parameters and the parameters
  * of the previous output transition
  */
 TransitionParameters PolynomialSISTransferFunction::CalculatePropagation(const std::vector<TransitionParameters>& parameters) {
@@ -164,6 +164,9 @@ double PolynomialSISTransferFunction::CalculateParameter(
 		}
 	}
 	return output_parameter;
+}
+
+void PolynomialSISTransferFunction::SetName(const std::string& transferfunction_name) {
 }
 
 PolynomialSISTransferFunction::~PolynomialSISTransferFunction() {

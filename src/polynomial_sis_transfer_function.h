@@ -1,6 +1,6 @@
 /*
-*   Polynomial SIS transfer function class
-*/
+ *   Polynomial SIS transfer function class
+ */
 #ifndef POLYNOMIAL_SIS_TRANSFER_FUNCTION_H
 #define POLYNOMIAL_SIS_TRANSFER_FUNCTION_H
 
@@ -25,6 +25,7 @@ class PolynomialSISTransferFunction : public TransferFunction {
 	void ReadBoundaryFile(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
 	void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) override;
+	void SetName(const std::string& transferfunction_name) override;
 };
 
 #endif

@@ -28,6 +28,8 @@ void ANNSISTransferFunction::ReadBoundaryFile(const std::string& file_name) {
 }
 
 TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vector<TransitionParameters>& parameters) {
+	PLOG_DEBUG_IF(logging) << "Using Transferfunction " << transferfunction_name << ".";
+
 	TransitionParameters current_inp_tr = parameters[0];
 	TransitionParameters prev_outp_tr;
 
@@ -46,18 +48,16 @@ TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vec
 		time_shift = MAX_TIME_SHIFT;
 	}
 
-	if (tf_type == AFALLING || tf_type == ARISING) {
-		std::vector<float> tf_parameters = {(float)time_shift, (float)current_inp_steep, (float)prev_out_steep};
-		if (boundary_watchdog.ParametersAreOutsideValidRegion(tf_parameters)) {
-			auto corrected_tf_parameters = boundary_watchdog.GetClosestInsideValidRegion(tf_parameters);
+	std::vector<float> tf_parameters = {(float)time_shift, (float)current_inp_steep, (float)prev_out_steep};
+	if (boundary_watchdog.ParametersAreOutsideValidRegion(tf_parameters)) {
+		auto corrected_tf_parameters = boundary_watchdog.GetClosestInsideValidRegion(tf_parameters);
 
-			PLOG_DEBUG << "Corrected Parameters " << std::setprecision(5) << time_shift << ", " << current_inp_steep << ", " << prev_out_steep
-			           << " to " << corrected_tf_parameters[0] << ", " << corrected_tf_parameters[1] << ", " << corrected_tf_parameters[2] << ".";
+		PLOG_DEBUG_IF(logging) << "Corrected Parameters " << std::setprecision(5) << time_shift << ", " << current_inp_steep << ", " << prev_out_steep
+		                       << " to " << corrected_tf_parameters[0] << ", " << corrected_tf_parameters[1] << ", " << corrected_tf_parameters[2] << ".";
 
-			time_shift = (double)corrected_tf_parameters[0];
-			current_inp_steep = (double)corrected_tf_parameters[1];
-			prev_out_steep = (double)corrected_tf_parameters[2];
-		}
+		time_shift = (double)corrected_tf_parameters[0];
+		current_inp_steep = (double)corrected_tf_parameters[1];
+		prev_out_steep = (double)corrected_tf_parameters[2];
 	}
 
 	auto ann_input = cppflow::tensor({(float)time_shift, (float)current_inp_steep, (float)prev_out_steep});
@@ -71,7 +71,12 @@ TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vec
 
 	return {output_steepness, current_inp_tr.shift + output_shift};
 }
+
 void ANNSISTransferFunction::SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) {
 	MAX_TIME_SHIFT = maximal_shift;
 	default_prev_tr = default_prev_transition;
+}
+
+void ANNSISTransferFunction::SetName(const std::string& transferfunction_name) {
+	this->transferfunction_name = transferfunction_name;
 }

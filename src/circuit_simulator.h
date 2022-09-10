@@ -1,6 +1,6 @@
 /*
-*   Parser for circuit files
-*/
+ *   Parser for circuit files
+ */
 #ifndef CIRCUIT_SIMULATOR_H
 #define CIRCUIT_SIMULATOR_H
 
@@ -16,6 +16,7 @@ class CircuitSimulator {
 	CircuitFileParser parser;
 	std::shared_ptr<TransitionSchedule> transition_schedule;
 	std::shared_ptr<TFCollection> transfer_functions;
+	bool logging;
 
 	void InitializeNORGates();
 	void InitializeInputs();
@@ -28,11 +29,12 @@ class CircuitSimulator {
 	void InitializeTransferFunctions();
 
    public:
-	CircuitSimulator() : logic_gates{},
-	                     circuit_inputs{},
-	                     parser{CircuitFileParser()},
-	                     transition_schedule{},
-	                     transfer_functions{} {};
+	CircuitSimulator(bool logging) : logic_gates{},
+	                                 circuit_inputs{},
+	                                 parser{CircuitFileParser()},
+	                                 transition_schedule{},
+	                                 transfer_functions{},
+	                                 logging{logging} {};
 	~CircuitSimulator();
 	void InitializeCircuit(const std::string& file_path);
 	std::shared_ptr<TransferFunction> InitializeTransferFunction(ParsedTFModel sis_transfer_function, TFModelType model_type, ANNSISTYPE ty_type);
