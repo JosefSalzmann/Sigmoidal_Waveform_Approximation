@@ -22,9 +22,9 @@ void ANNSISTransferFunction::ReadModel(const std::string& file_name) {
 	}
 }
 
-void ANNSISTransferFunction::ReadBoundaryFile(const std::string& file_name) {
-	boundary_watchdog = BoundaryWatchdog();
-	boundary_watchdog.LoadOffFile(file_name);
+void ANNSISTransferFunction::ReadValidRegionFile(const std::string& file_name) {
+	valid_region_containment = ValidRegionContainment();
+	valid_region_containment.LoadOffFile(file_name);
 }
 
 TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vector<TransitionParameters>& parameters) {
@@ -49,8 +49,8 @@ TransitionParameters ANNSISTransferFunction::CalculatePropagation(const std::vec
 	}
 
 	std::vector<float> tf_parameters = {(float)time_shift, (float)current_inp_steep, (float)prev_out_steep};
-	if (boundary_watchdog.ParametersAreOutsideValidRegion(tf_parameters)) {
-		auto corrected_tf_parameters = boundary_watchdog.GetClosestInsideValidRegion(tf_parameters);
+	if (valid_region_containment.ParametersAreOutsideValidRegion(tf_parameters)) {
+		auto corrected_tf_parameters = valid_region_containment.GetClosestInsideValidRegion(tf_parameters);
 
 		PLOG_DEBUG_IF(logging) << "Corrected Parameters " << std::setprecision(5) << time_shift << ", " << current_inp_steep << ", " << prev_out_steep
 		                       << " to " << corrected_tf_parameters[0] << ", " << corrected_tf_parameters[1] << ", " << corrected_tf_parameters[2] << ".";

@@ -63,7 +63,7 @@ void PolynomialSISTransferFunction::ReadModel(const std::string& file_name) {
 	}
 }
 
-void PolynomialSISTransferFunction::ReadBoundaryFile(const std::string& file_name) {
+void PolynomialSISTransferFunction::ReadValidRegionFile(const std::string& file_name) {
 	return;
 }
 

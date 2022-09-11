@@ -1,8 +1,8 @@
 /*
-*   BoundaryWatchdog class
+*   ValidRegionContainment class
 */
-#ifndef BOUNDARY_WATCHDOG_H
-#define BOUNDARY_WATCHDOG_H
+#ifndef ValidRegionContainment_H
+#define ValidRegionContainment_H
 
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
 #include <CGAL/AABB_traits.h>
@@ -37,7 +37,7 @@ typedef CGAL::Surface_mesh<Point_3> Mesh;
 typedef CGAL::AABB_face_graph_triangle_primitive<Mesh> AABB_face_graph_primitive;
 typedef CGAL::AABB_traits<K, AABB_face_graph_primitive> AABB_face_graph_traits;
 
-class BoundaryWatchdog {
+class ValidRegionContainment {
    private:
 	double T_MULTIPLIER = 1000;
 	CGAL::Surface_mesh<Point_3> parameter_mesh;
@@ -45,7 +45,7 @@ class BoundaryWatchdog {
 	Point_3 BuildPointFromParameters(const std::vector<float>& parameters);
 
    public:
-	BoundaryWatchdog() : parameter_mesh{}, parameter_aabb_tree{} {};
+	ValidRegionContainment() : parameter_mesh{}, parameter_aabb_tree{} {};
 	void LoadOffFile(std::string file);
 	bool ParametersAreOutsideValidRegion(const std::vector<float>& parameters);
 	std::vector<float> GetClosestInsideValidRegion(const std::vector<float>& parameters);

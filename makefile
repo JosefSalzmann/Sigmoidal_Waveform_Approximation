@@ -35,13 +35,13 @@ OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/gnd_potential.o \
 		$(OBJ_DIR)/vdd_potential.o \
 		$(OBJ_DIR)/ann_sis_transfer_function.o \
-		$(OBJ_DIR)/boundary_watchdog.o \
+		$(OBJ_DIR)/valid_region_containment.o \
 		$(OBJ_DIR)/pcl_test.o
 
 $(MAIN): $(OBJS)
 	$(CXX) -o $@ $^ $(LIBS)
 
-$(OBJ_DIR)/boundary_watchdog.o : $(SRC_DIR)/boundary_watchdog.cpp
+$(OBJ_DIR)/valid_region_containment.o : $(SRC_DIR)/valid_region_containment.cpp
 	$(CXX) $(CXXFLAGS) $(CGALFLAGS) -c -o $@ $<
 
 $(OBJ_DIR)/pcl_test.o : $(SRC_DIR)/pcl_test.cpp

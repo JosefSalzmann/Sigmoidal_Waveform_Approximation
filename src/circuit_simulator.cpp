@@ -349,12 +349,12 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->inverter_falling->SetName("inverter_falling");
 	transfer_functions->inverter_rising->SetName("inverter_rising");
 
-	transfer_functions->sis_input_a_falling->ReadBoundaryFile(parsed_tf_models[1].file_name);
-	transfer_functions->sis_input_a_rising->ReadBoundaryFile(parsed_tf_models[3].file_name);
-	transfer_functions->sis_input_b_falling->ReadBoundaryFile(parsed_tf_models[5].file_name);
-	transfer_functions->sis_input_b_rising->ReadBoundaryFile(parsed_tf_models[7].file_name);
-	transfer_functions->inverter_falling->ReadBoundaryFile(parsed_tf_models[9].file_name);
-	transfer_functions->inverter_rising->ReadBoundaryFile(parsed_tf_models[11].file_name);
+	transfer_functions->sis_input_a_falling->ReadValidRegionFile(parsed_tf_models[1].file_name);
+	transfer_functions->sis_input_a_rising->ReadValidRegionFile(parsed_tf_models[3].file_name);
+	transfer_functions->sis_input_b_falling->ReadValidRegionFile(parsed_tf_models[5].file_name);
+	transfer_functions->sis_input_b_rising->ReadValidRegionFile(parsed_tf_models[7].file_name);
+	transfer_functions->inverter_falling->ReadValidRegionFile(parsed_tf_models[9].file_name);
+	transfer_functions->inverter_rising->ReadValidRegionFile(parsed_tf_models[11].file_name);
 
 	// TODO: make this configurable
 	double max_shift = 0.15;

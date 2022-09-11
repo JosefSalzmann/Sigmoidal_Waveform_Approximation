@@ -82,7 +82,7 @@ class TransferFunction {
    public:
 	virtual ~TransferFunction() {}
 	virtual void ReadModel(const std::string& file_name) = 0;
-	virtual void ReadBoundaryFile(const std::string& file_name) = 0;
+	virtual void ReadValidRegionFile(const std::string& file_name) = 0;
 	virtual TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) = 0;
 	virtual void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) = 0;
 	virtual void SetName(const std::string& transferfunction_name) = 0;

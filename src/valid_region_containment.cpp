@@ -1,6 +1,6 @@
-#include "boundary_watchdog.h"
+#include "valid_region_containment.h"
 
-void BoundaryWatchdog::LoadOffFile(std::string file) {
+void ValidRegionContainment::LoadOffFile(std::string file) {
 	std::cout << "Reading " << file << std::endl;
 	std::vector<K::Point_3> points;
 	std::vector<std::vector<std::size_t>> polygons;
@@ -20,7 +20,7 @@ void BoundaryWatchdog::LoadOffFile(std::string file) {
 	CGAL::Polygon_mesh_processing::build_AABB_tree(parameter_mesh, parameter_aabb_tree);
 }
 
-bool BoundaryWatchdog::ParametersAreOutsideValidRegion(const std::vector<float>& parameters) {
+bool ValidRegionContainment::ParametersAreOutsideValidRegion(const std::vector<float>& parameters) {
 	auto current_point = BuildPointFromParameters(parameters);
 	auto point_outside = Point_3(100000, 0, 0);
 
@@ -34,7 +34,7 @@ bool BoundaryWatchdog::ParametersAreOutsideValidRegion(const std::vector<float>&
 		return false;
 }
 
-std::vector<float> BoundaryWatchdog::GetClosestInsideValidRegion(const std::vector<float>& parameters) {
+std::vector<float> ValidRegionContainment::GetClosestInsideValidRegion(const std::vector<float>& parameters) {
 	std::vector<float> multiplied_parameters = parameters;
 	multiplied_parameters[0] = multiplied_parameters[0] * T_MULTIPLIER;
 	auto current_point = BuildPointFromParameters(multiplied_parameters);
@@ -45,6 +45,6 @@ std::vector<float> BoundaryWatchdog::GetClosestInsideValidRegion(const std::vect
 	return {(float)location_point.x() / (float)T_MULTIPLIER, (float)location_point.y(), (float)location_point.z()};
 }
 
-Point_3 BoundaryWatchdog::BuildPointFromParameters(const std::vector<float>& parameters) {
+Point_3 ValidRegionContainment::BuildPointFromParameters(const std::vector<float>& parameters) {
 	return Point_3(parameters[0], parameters[1], parameters[2]);
 }

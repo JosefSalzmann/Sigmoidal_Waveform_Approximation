@@ -22,7 +22,7 @@ class PolynomialSISTransferFunction : public TransferFunction {
 	PolynomialSISTransferFunction() : default_prev_tr{}, MAX_TIME_SHIFT{1.5}, model_degree{-1} {};
 	~PolynomialSISTransferFunction();
 	void ReadModel(const std::string& file_name) override;
-	void ReadBoundaryFile(const std::string& file_name) override;
+	void ReadValidRegionFile(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
 	void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) override;
 	void SetName(const std::string& transferfunction_name) override;

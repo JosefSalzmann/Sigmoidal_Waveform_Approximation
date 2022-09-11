@@ -7,8 +7,8 @@
 #include <cppflow/model.h>
 #include <cppflow/ops.h>
 
-#include "boundary_watchdog.h"
 #include "logic_gate.h"
+#include "valid_region_containment.h"
 
 class ANNSISTransferFunction : public TransferFunction {
    private:
@@ -18,7 +18,7 @@ class ANNSISTransferFunction : public TransferFunction {
 	double MAX_TIME_SHIFT;
 	int model_degree;
 	ANNSISTYPE tf_type;
-	BoundaryWatchdog boundary_watchdog;
+	ValidRegionContainment valid_region_containment;
 	std::string transferfunction_name;
 	bool logging;
 
@@ -29,7 +29,7 @@ class ANNSISTransferFunction : public TransferFunction {
    public:
 	explicit ANNSISTransferFunction(const ANNSISTYPE& tf_type, bool logging) : default_prev_tr{}, MAX_TIME_SHIFT{1.5}, model_degree{-1}, tf_type{tf_type}, logging{logging} {};
 	void ReadModel(const std::string& file_name) override;
-	void ReadBoundaryFile(const std::string& file_name) override;
+	void ReadValidRegionFile(const std::string& file_name) override;
 	TransitionParameters CalculatePropagation(const std::vector<TransitionParameters>& parameters) override;
 	void SetDefaultValues(const TransitionParameters& default_prev_transition, double maximal_shift) override;
 	void SetName(const std::string& transferfunction_name) override;
