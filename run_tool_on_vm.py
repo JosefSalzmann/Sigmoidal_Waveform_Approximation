@@ -22,6 +22,9 @@ for dir in circuit_dirs:
     command = "cp " + target_dir + "/" + dir + "/InA.csv ./benchmarking/InA.csv"
     print(command)
     code = subprocess.call(command, shell=True)
+    command = "cp " + target_dir + "/" + dir + "/InB.csv ./benchmarking/InB.csv"
+    print(command)
+    code = subprocess.call(command, shell=True)
     command = "./main -c " + circuit_path + " >> tool_timing.txt"
     print(command)
     code = subprocess.call(command, shell=True)
@@ -29,6 +32,9 @@ for dir in circuit_dirs:
     ina_csv_string = f.read()
     f.close()
     ina_csv_string = "OA_0\n" + ina_csv_string + "\n\n"
+    f = open("benchmarking/InB.csv", "r")
+    ina_csv_string = ina_csv_string + "OB_0\n" + f.read() + "\n\n"
+    f.close()
     f = open("tool_prediction.txt", "w+")
     f.write(ina_csv_string)
     f.close()
