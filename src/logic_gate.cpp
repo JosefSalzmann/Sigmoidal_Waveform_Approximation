@@ -173,6 +173,17 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 	 */
 	if ((input == Input_A && latest_valid_input_b_tr->parameters.steepness > 0) ||
 	    (input == Input_B && latest_valid_input_a_tr->parameters.steepness > 0)) {
+		if (input == Input_A) {
+			latest_valid_input_b_tr->cancels_tr = transition;
+			latest_valid_input_b_tr->is_responsible_for_cancelation = true;
+		} else {
+			latest_valid_input_a_tr->cancels_tr = transition;
+			latest_valid_input_a_tr->is_responsible_for_cancelation = true;
+		}
+		std::string input_name = (input == Input_A) ? "Input A" : "Input B";
+		double latest_steepness = (input == Input_A) ? latest_valid_input_b_tr->parameters.steepness : latest_valid_input_a_tr->parameters.steepness;
+		double latest_shift = (input == Input_A) ? latest_valid_input_b_tr->parameters.shift : latest_valid_input_a_tr->parameters.shift;
+		PLOG_DEBUG_IF(logging) << "No propagation from " << input_name << ", lastest other input transition was (" << std::to_string(latest_steepness) << "," << std::to_string(latest_shift) << ").";
 		return;
 	}
 

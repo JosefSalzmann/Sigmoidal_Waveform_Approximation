@@ -155,14 +155,14 @@ bool CircuitFileParser::PerformSanityCheck() {
 		throw std::exception();
 	}
 
-	// look sinks that are not connected to a source
-	// for (auto it = sink_names.begin(); it != sink_names.end(); it++) {
-	// 	auto source = source_names.find(*it);
-	// 	if (source == source_names.end()) {
-	// 		std::cerr << "Error, circuit node " << *it << " is not connected." << std::endl;
-	// 	}
-	// 	return false;
-	// }
+	// look for sinks that have no associated source
+	for (auto it = sink_names.begin(); it != sink_names.end(); it++) {
+		auto source = source_names.find(*it);
+		if (source == source_names.end()) {
+			std::cerr << "Error, circuit node " << *it << " is not connected." << std::endl;
+			return false;
+		}
+	}
 	return true;
 }
 

@@ -61,6 +61,7 @@ std::vector<float> ValidRegionContainment::GetClosestInsideValidRegion(const std
 	auto location = CGAL::Polygon_mesh_processing::locate_with_AABB_tree(current_point, parameter_aabb_tree, parameter_mesh);
 	auto location_point = CGAL::Polygon_mesh_processing::construct_point(location, parameter_mesh);
 
+	// return parameters;
 	return {(float)location_point.x() / (float)T_MULTIPLIER, (float)location_point.y(), (float)location_point.z()};
 }
 

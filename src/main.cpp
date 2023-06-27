@@ -80,9 +80,10 @@ int main(int argc, char* argv[]) {
 		plog::init(plog::debug, log_name.c_str());
 	}
 	CircuitSimulator simulator = CircuitSimulator(logging);
-	try {
-		simulator.InitializeCircuit(file_name);
-	} catch (const std::exception& e) {
+
+	bool circuit_initializeable = simulator.InitializeCircuit(file_name);
+	if (!circuit_initializeable) {
+		std::cout << "Circuit could not be initialized." << std::endl;
 		return -1;
 	}
 

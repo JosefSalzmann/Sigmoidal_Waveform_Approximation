@@ -34,11 +34,11 @@
 #include "logic_gate.h"
 #include "polynomial_sis_transfer_function.h"
 
-void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
+bool CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 	parser.ParseFile(file_path);
 	bool valid_file = parser.PerformSanityCheck();
 	if (!valid_file) {
-		return;  // TODO: report back that file is not valid
+		return false;
 	}
 
 	InitializeTransferFunctions();
@@ -56,6 +56,7 @@ void CircuitSimulator::InitializeCircuit(const std::string& file_path) {
 		}
 	}
 	transition_schedule->SortFutureTransitions();
+	return true;
 }
 
 /*
@@ -117,6 +118,8 @@ void CircuitSimulator::InitializeNORGates() {
 			logic_gates[i]->SetInputSource(circuit_input, Input_A);
 			NORGateInput subscriber = NORGateInput{logic_gates[i], Input_A};
 			circuit_inputs[input_a_input_index]->AddSubscriber(subscriber);
+		} else {
+			// TODO: unkonwn -> invalid circuit
 		}
 
 		if (it->gate_type.compare("INV") == 0) {  // inverter does not have an input b
@@ -139,6 +142,8 @@ void CircuitSimulator::InitializeNORGates() {
 			logic_gates[i]->SetInputSource(circuit_input, Input_B);
 			NORGateInput subscriber = NORGateInput{logic_gates[i], Input_B};
 			circuit_inputs[input_b_nor_input_index]->AddSubscriber(subscriber);
+		} else {
+			// TODO: unkonwn -> invalid circuit
 		}
 
 		i++;

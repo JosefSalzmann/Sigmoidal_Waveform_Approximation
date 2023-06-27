@@ -30,9 +30,9 @@ OA_9
 OA_10
 
 TRANSFERFUNCTIONS
-SIS_A_F ANN tfs/SIS_B_falling_model
+SIS_A_F ANN tfs/SIS_A_falling_model
 SIS_A_F OFF tfs/SIS_A_falling_input_stretched.off
-SIS_A_R ANN tfs/SIS_B_rising_model
+SIS_A_R ANN tfs/SIS_A_rising_model
 SIS_A_R OFF tfs/SIS_A_rising_input_stretched.off
 SIS_B_F ANN tfs/SIS_B_falling_model
 SIS_B_F OFF tfs/SIS_B_falling_input_stretched.off
