@@ -150,39 +150,21 @@ void CircuitSimulator::InitializeNORGates() {
 	}
 }
 
+// TODO: should be possible to use implement binary search here
 int CircuitSimulator::GetGateIndexFromOutputName(const std::string& name) {
-	int left = 0;
-	int right = logic_gates.size() - 1;
-
-	while (left <= right) {
-		int middle = left + (right - left) / 2;
-		if (logic_gates[middle]->GetOutputName().compare(name) == 0) {
-			return middle;
-		} else {
-			if (logic_gates[middle]->GetOutputName().compare(name) > 0) {
-				right = middle - 1;
-			} else {
-				left = middle + 1;
-			}
+	for (int i = 0; i < (int)logic_gates.size(); i++) {
+		if (logic_gates[i]->GetOutputName().compare(name) == 0) {
+			return i;
 		}
 	}
 	return -1;
 }
 
+// TODO: should be possible to use implement binary search here
 int CircuitSimulator::GetCircuitInputIndexFromOutputName(const std::string& name) {
-	int left = 0;
-	int right = circuit_inputs.size() - 1;
-
-	while (left <= right) {
-		int middle = left + (right - left) / 2;
-		if (circuit_inputs[middle]->GetOutputName().compare(name) == 0) {
-			return middle;
-		} else {
-			if (circuit_inputs[middle]->GetOutputName().compare(name) > 0) {
-				right = middle - 1;
-			} else {
-				left = middle + 1;
-			}
+	for (int i = 0; i < (int)circuit_inputs.size(); i++) {
+		if (circuit_inputs[i]->GetOutputName().compare(name) == 0) {
+			return i;
 		}
 	}
 	return -1;
