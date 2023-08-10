@@ -13,3 +13,9 @@ Using [plog](https://github.com/SergiusTheBest/plog) for logging.
 Using [pcl](https://pointclouds.org/) for handling point clouds.
 
 Using [cgal](https://www.cgal.org/) for geometrical operations.
+
+## Usage
+After compiling with: ```make all``` simulations can be conducted by specifying an input file with option ```-c``` e.g.,
+```
+./sigmoidal_approximation_simulator -c benchmarking/benchmarking_circuit_xor.txt
+```
