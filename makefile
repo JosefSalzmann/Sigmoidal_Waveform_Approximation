@@ -23,7 +23,7 @@ LIBS = -L. -lcryptominisat5 -isystem libtensorflow2 -ltensorflow -isystem cppflo
 		/usr/lib/x86_64-linux-gnu/libpcl_search.so /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so
 SRC_DIR = ./src
 OBJ_DIR = ./obj
-MAIN = main
+MAIN = sigmoidal_approximation_simulator
 OBJS =  $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/circuit_file_parser.o \
 		$(OBJ_DIR)/logic_gate.o \

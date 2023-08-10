@@ -34,7 +34,7 @@ void Usage(const std::string& prog_name) {
 	          << "Options:" << std::endl
 	          << "-h	Print this message" << std::endl
 	          << "-c	Path to circuit file" << std::endl
-	          << "-o	Computer the concave hull of the specified pcd file" << std::endl
+	          << "-o	Compute the concave hull of the specified pcd file" << std::endl
 	          << "-l	Write log to the specified file" << std::endl;
 }
 
