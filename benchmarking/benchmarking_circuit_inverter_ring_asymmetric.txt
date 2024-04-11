@@ -1,0 +1,44 @@
+INPUTS
+INA InA.csv
+
+GATES
+NOR XRING_0 RING_0_OUT RING_4_OUT INA
+NOR XRING_1 RING_1_OUT GND RING_0_OUT
+NOR XRING_2 RING_2_OUT GND RING_1_OUT
+NOR XRING_3 RING_3_OUT GND RING_2_OUT
+NOR XRING_4 RING_4_OUT GND RING_3_OUT
+*NOR XRING_5 RING_5_OUT GND RING_4_OUT
+*NOR XRING_6 RING_6_OUT GND RING_5_OUT
+*NOR XRING_7 RING_7_OUT GND RING_6_OUT
+*NOR XRING_8 RING_8_OUT GND RING_7_OUT
+*NOR XRING_9 RING_9_OUT GND RING_8_OUT
+*NOR XRING_A RING_A_OUT GND RING_9_OUT
+
+
+OUTPUTS
+RING_0_OUT
+RING_1_OUT
+*RING_2_OUT
+*RING_3_OUT
+*RING_4_OUT
+*RING_5_OUT
+*RING_6_OUT
+*RING_7_OUT
+*RING_8_OUT
+*RING_9_OUT
+*RING_A_OUT
+
+
+TRANSFERFUNCTIONS
+SIS_A_F ANN tfs/SIS_A_falling_model
+SIS_A_F OFF tfs/SIS_A_falling_input_stretched.off
+SIS_A_R ANN tfs/SIS_A_rising_model
+SIS_A_R OFF tfs/SIS_A_rising_input_stretched.off
+SIS_B_F ANN tfs/SIS_B_falling_model
+SIS_B_F OFF tfs/SIS_B_falling_input_stretched.off
+SIS_B_R ANN tfs/SIS_B_rising_model
+SIS_B_R OFF tfs/SIS_B_rising_input_stretched.off
+Inverter_F ANN tfs/Inverter_falling_model
+Inverter_F OFF tfs/Inverter_falling_input_stretched.off
+Inverter_R ANN tfs/Inverter_rising_model
+Inverter_R OFF tfs/Inverter_rising_input_stretched.off
