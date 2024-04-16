@@ -183,7 +183,7 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 		std::string input_name = (input == Input_A) ? "Input A" : "Input B";
 		double latest_steepness = (input == Input_A) ? latest_valid_input_b_tr->parameters.steepness : latest_valid_input_a_tr->parameters.steepness;
 		double latest_shift = (input == Input_A) ? latest_valid_input_b_tr->parameters.shift : latest_valid_input_a_tr->parameters.shift;
-		PLOG_DEBUG_IF(logging) << "No propagation from " << input_name << ", lastest other input transition was (" << std::to_string(latest_steepness) << "," << std::to_string(latest_shift) << ").";
+		PLOG_DEBUG_IF(logging) << "No propagation from " << input_name << ", latest other input transition was (" << std::to_string(latest_steepness) << "," << std::to_string(latest_shift) << ").";
 		return;
 	}
 
@@ -192,21 +192,33 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 	// 	output_transitions.pop_back();
 	// }
 
+	if (latest_valid_output_tr->parameters.steepness * transition->parameters.steepness < 0) {
+		// not same sign (but should be same sign)
+		int debug = 1;
+	}
+
 	generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
-	generated_outp_tr->parents = {transition};
+	generated_outp_tr->direct_parents = {transition};
+	if (input == Input_A) {
+		generated_outp_tr->indirect_parents = {latest_valid_input_b_tr};
+		latest_valid_input_b_tr->indirect_children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
+	} else if (input == Input_B) {
+		generated_outp_tr->indirect_parents = {latest_valid_input_a_tr};
+		latest_valid_input_a_tr->indirect_children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
+	}
 
 	generated_outp_tr->parameters = generated_outp_tr_params;
 	generated_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
 	generated_outp_tr->sinks = subscribers;
-	transition->children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
+	transition->direct_children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
 
 	/*
 	 * Check for cancelation
 	 */
+	if (output_node_name.compare("XNOR_3_NUM73_OUT") == 0 && transition->parameters.shift > 4.30) {
+		int debug = 1;
+	}
 	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
-		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
-		// 	int debug = 0;
-		// }
 		PLOG_DEBUG_IF(logging) << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
 		                       << " at Gate " << this->gate_name << ".";
 		CancelTransition(latest_valid_output_tr, schedule);
@@ -252,12 +264,13 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
 	TransitionParameters generated_outp_tr_params;
 	std::shared_ptr<Transition> generated_outp_tr = std::shared_ptr<Transition>(new Transition);
 	generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
-	generated_outp_tr->parents = {transition};
+	generated_outp_tr->direct_parents = {transition};
+	generated_outp_tr->indirect_parents = {};
 
 	generated_outp_tr->parameters = generated_outp_tr_params;
 	generated_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
 	generated_outp_tr->sinks = subscribers;
-	transition->children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
+	transition->direct_children.push_back(std::shared_ptr<Transition>(generated_outp_tr));
 
 	/*
 	 * Check for cancelation
@@ -336,8 +349,14 @@ void LogicGate::CancelTransition(const std::shared_ptr<Transition>& transition, 
 		}
 	}
 	transition->cancelation = true;
-	for (auto it = transition->children.begin(); it != transition->children.end(); it++) {
+	for (auto it = transition->direct_children.begin(); it != transition->direct_children.end(); it++) {
 		CancelTransition(*it, schedule);
+	}
+
+	for (auto it = transition->indirect_children.begin(); it != transition->indirect_children.end(); it++) {
+		CancelTransition(*it, schedule);
+		assert((*it)->direct_parents.size() == 1);
+		schedule->AddFutureTransition((*it)->direct_parents[0]);
 	}
 }
 
@@ -358,6 +377,10 @@ double LogicGate::CalculatePulseValue(double vdd, double x, TransitionParameters
  * two transitions. If the maximum/minimum is smaller/greater than Vdd/2 they cancel each other.
  */
 bool LogicGate::CheckCancelation(TransitionParameters transition1, TransitionParameters transition2) {
+	if (transition1.steepness * transition2.steepness > 0) {
+		// both same sign
+		int debug = 1;
+	}
 	double vdd = 1.2;
 	int n_points = 20;
 	double test_points[n_points];

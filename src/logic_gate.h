@@ -82,8 +82,10 @@ struct Transition {
 	std::shared_ptr<TransitionSource> source;
 	std::vector<NORGateInput> sinks;
 	TransitionParameters parameters;
-	std::vector<std::shared_ptr<Transition>> parents;  // one parent for SIS, two parents for MIS
-	std::vector<std::shared_ptr<Transition>> children;
+	std::vector<std::shared_ptr<Transition>> direct_parents;    // the transition that is directly causing this transition: transition at INA => INA is direct parent
+	std::vector<std::shared_ptr<Transition>> indirect_parents;  // the transition that is enabling this transition to happen: transition at INA => INB is indirect parent
+	std::vector<std::shared_ptr<Transition>> direct_children;
+	std::vector<std::shared_ptr<Transition>> indirect_children;
 	bool cancelation = false;
 	bool is_responsible_for_cancelation = false;
 	std::shared_ptr<Transition> cancels_tr;  // transition that gets canceled by this transition
