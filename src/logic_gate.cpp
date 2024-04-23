@@ -150,12 +150,16 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 			if (!latest_v_out_tr_found) {
 				latest_valid_output_tr = *it;
 				latest_v_out_tr_found = true;
+				break;
 			} else {
 				second_latest_valid_output_tr = *it;
 				break;
 			}
 		}
 	}
+
+	PLOG_DEBUG_IF(logging) << "Latest Valid Output Transition: " << std::to_string(latest_valid_output_tr->parameters.steepness) << "," << std::to_string(latest_valid_output_tr->parameters.shift)
+	                       << " at Gate " << this->gate_name << ".";
 
 	if (input == Input_A) {
 		input_a_transitions.push_back(transition);
@@ -365,24 +369,81 @@ TransitionParameters LogicGate::CaclulateSISParametersAtInput(TransitionParamete
 void LogicGate::CancelTransition(const std::shared_ptr<Transition>& transition, const std::shared_ptr<TransitionSchedule>& schedule) {
 	PLOG_DEBUG_IF(logging) << "Canceled Transition: " << std::to_string(transition->parameters.steepness) << "," << std::to_string(transition->parameters.shift)
 	                       << " at Output " << transition->source->GetOutputName() << ".";
-	if (transition->is_responsible_for_cancelation) {
-		transition->cancels_tr->cancelation = false;
-		PLOG_DEBUG_IF(logging) << "Uncanceled Transition: " << std::to_string(transition->cancels_tr->parameters.steepness) << "," << std::to_string(transition->cancels_tr->parameters.shift)
-		                       << " at Output " << transition->cancels_tr->source->GetOutputName() << ".";
-		if (!schedule->TransitionIsScheduled(transition->cancels_tr)) {
-			schedule->AddFutureTransition(transition->cancels_tr);
-		}
-	}
+
 	transition->cancelation = true;
+
 	for (auto it = transition->direct_children.begin(); it != transition->direct_children.end(); it++) {
 		CancelTransition(*it, schedule);
 	}
 
-	for (auto it = transition->indirect_children.begin(); it != transition->indirect_children.end(); it++) {
-		CancelTransition(*it, schedule);
-		assert((*it)->direct_parents.size() == 1);
-		schedule->AddFutureTransition((*it)->direct_parents[0]);
+	for (auto it = transition->sinks.begin(); it != transition->sinks.end(); it++) {
+		it->nor_gate->CheckInputOutputConsistenty(transition->parameters.shift, schedule);
 	}
+}
+
+/*
+ * Mark sure that input and output are consistent after cancelation happened at an input.
+ * Generates and output transition if needed.
+ */
+void LogicGate::CheckInputOutputConsistenty(double time, const std::shared_ptr<TransitionSchedule>& schedule) {
+	assert(this->gate_type == NOR);
+
+	std::shared_ptr<Transition> latest_valid_input_a_tr;
+	std::shared_ptr<Transition> latest_valid_input_b_tr;
+	std::shared_ptr<Transition> latest_valid_output_tr;
+
+	for (auto it = input_a_transitions.rbegin(); it != input_a_transitions.rend(); it++) {
+		if (!(*it)->cancelation) {
+			latest_valid_input_a_tr = *it;
+			break;
+		}
+	}
+
+	for (auto it = input_b_transitions.rbegin(); it != input_b_transitions.rend(); it++) {
+		if (!(*it)->cancelation) {
+			latest_valid_input_b_tr = *it;
+			break;
+		}
+	}
+
+	bool latest_v_out_tr_found = false;
+	for (auto it = output_transitions.rbegin(); it != output_transitions.rend(); it++) {
+		if (!(*it)->cancelation) {
+			if (!latest_v_out_tr_found) {
+				latest_valid_output_tr = *it;
+				latest_v_out_tr_found = true;
+				break;
+			}
+		}
+	}
+
+	TransitionParameters consistency_outp_tr_params;
+	if (latest_valid_input_a_tr->parameters.steepness < 0 && latest_valid_input_b_tr->parameters.steepness < 0) {
+		if (latest_valid_output_tr->parameters.steepness > 0) {
+			// input and output are consistent, nothing to do
+			return;
+		} else {
+			consistency_outp_tr_params = {100, time};
+		}
+	} else {
+		if (latest_valid_output_tr->parameters.steepness < 0) {
+			// input and output are consistent, nothing to do
+			return;
+		} else {
+			consistency_outp_tr_params = {-100, time};
+		}
+	}
+
+	std::shared_ptr<Transition> consistency_outp_tr = std::shared_ptr<Transition>(new Transition);
+	consistency_outp_tr->parameters = consistency_outp_tr_params;
+	consistency_outp_tr->source = std::shared_ptr<TransitionSource>(shared_from_this());
+	consistency_outp_tr->sinks = this->subscribers;
+
+	schedule->AddFutureTransition(consistency_outp_tr);
+	output_transitions.push_back(consistency_outp_tr);
+
+	PLOG_DEBUG_IF(logging) << "Added Consistency Transition: " << std::to_string(consistency_outp_tr_params.steepness) << "," << std::to_string(consistency_outp_tr_params.shift)
+	                       << " at Gate " << this->gate_name << ".";
 }
 
 /*
@@ -404,7 +465,7 @@ double LogicGate::CalculatePulseValue(double vdd, double x, TransitionParameters
 bool LogicGate::CheckCancelation(TransitionParameters transition1, TransitionParameters transition2) {
 	if (transition1.steepness * transition2.steepness > 0) {
 		// both same sign
-		int debug = 1;
+		PLOG_DEBUG_IF(logging) << "Same-Sign Violation at " << this->gate_name;
 	}
 	double vdd = 1.2;
 	int n_points = 20;
