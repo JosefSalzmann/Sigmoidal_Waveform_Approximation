@@ -333,7 +333,7 @@ void CircuitSimulator::SetNORGateSubscirbersInputValue(std::shared_ptr<LogicGate
 void CircuitSimulator::InitializeTransferFunctions() {
 	std::vector<ParsedTFModel> parsed_tf_models = parser.GetTFModels();
 
-	if (parsed_tf_models.size() != 12) {
+	if (parsed_tf_models.size() != 20) {
 		std::cerr << "Transfer functions could not be parsed" << std::endl;
 		throw std::exception();
 	}
@@ -344,13 +344,21 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->sis_input_a_rising = InitializeTransferFunction(parsed_tf_models[2], SIS, ARISING);
 	transfer_functions->sis_input_b_falling = InitializeTransferFunction(parsed_tf_models[4], SIS, BFALLING);
 	transfer_functions->sis_input_b_rising = InitializeTransferFunction(parsed_tf_models[6], SIS, BRISING);
-	transfer_functions->inverter_falling = InitializeTransferFunction(parsed_tf_models[8], SIS, INVERTERFALLING);
-	transfer_functions->inverter_rising = InitializeTransferFunction(parsed_tf_models[10], SIS, INVERTERRISING);
+	transfer_functions->sis_input_a_FO2_falling = InitializeTransferFunction(parsed_tf_models[8], SIS, AFALLING);
+	transfer_functions->sis_input_a_FO2_rising = InitializeTransferFunction(parsed_tf_models[10], SIS, ARISING);
+	transfer_functions->sis_input_b_FO2_falling = InitializeTransferFunction(parsed_tf_models[12], SIS, BFALLING);
+	transfer_functions->sis_input_b_FO2_rising = InitializeTransferFunction(parsed_tf_models[14], SIS, BRISING);
+	transfer_functions->inverter_falling = InitializeTransferFunction(parsed_tf_models[16], SIS, INVERTERFALLING);
+	transfer_functions->inverter_rising = InitializeTransferFunction(parsed_tf_models[18], SIS, INVERTERRISING);
 
 	transfer_functions->sis_input_a_falling->SetName("sis_input_a_falling");
 	transfer_functions->sis_input_a_rising->SetName("sis_input_a_rising");
 	transfer_functions->sis_input_b_falling->SetName("sis_input_b_falling");
 	transfer_functions->sis_input_b_rising->SetName("sis_input_b_rising");
+	transfer_functions->sis_input_a_FO2_falling->SetName("sis_input_a_FO2_falling");
+	transfer_functions->sis_input_a_FO2_rising->SetName("sis_input_a_FO2_rising");
+	transfer_functions->sis_input_b_FO2_falling->SetName("sis_input_b_FO2_falling");
+	transfer_functions->sis_input_b_FO2_rising->SetName("sis_input_b_FO2_rising");
 	transfer_functions->inverter_falling->SetName("inverter_falling");
 	transfer_functions->inverter_rising->SetName("inverter_rising");
 
@@ -358,8 +366,12 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->sis_input_a_rising->ReadValidRegionFile(parsed_tf_models[3].file_name);
 	transfer_functions->sis_input_b_falling->ReadValidRegionFile(parsed_tf_models[5].file_name);
 	transfer_functions->sis_input_b_rising->ReadValidRegionFile(parsed_tf_models[7].file_name);
-	transfer_functions->inverter_falling->ReadValidRegionFile(parsed_tf_models[9].file_name);
-	transfer_functions->inverter_rising->ReadValidRegionFile(parsed_tf_models[11].file_name);
+	transfer_functions->sis_input_a_FO2_falling->ReadValidRegionFile(parsed_tf_models[9].file_name);
+	transfer_functions->sis_input_a_FO2_rising->ReadValidRegionFile(parsed_tf_models[11].file_name);
+	transfer_functions->sis_input_b_FO2_falling->ReadValidRegionFile(parsed_tf_models[13].file_name);
+	transfer_functions->sis_input_b_FO2_rising->ReadValidRegionFile(parsed_tf_models[15].file_name);
+	transfer_functions->inverter_falling->ReadValidRegionFile(parsed_tf_models[17].file_name);
+	transfer_functions->inverter_rising->ReadValidRegionFile(parsed_tf_models[19].file_name);
 
 	// TODO: make this configurable
 	double max_shift = 0.15;
@@ -370,6 +382,10 @@ void CircuitSimulator::InitializeTransferFunctions() {
 	transfer_functions->sis_input_a_rising->SetDefaultValues(default_prev_out_falling, 0.2);
 	transfer_functions->sis_input_b_falling->SetDefaultValues(default_prev_out_rising, 0.2);
 	transfer_functions->sis_input_b_rising->SetDefaultValues(default_prev_out_falling, 0.2);
+	transfer_functions->sis_input_a_FO2_falling->SetDefaultValues(default_prev_out_rising, 0.2);
+	transfer_functions->sis_input_a_FO2_rising->SetDefaultValues(default_prev_out_falling, 0.2);
+	transfer_functions->sis_input_b_FO2_falling->SetDefaultValues(default_prev_out_rising, 0.2);
+	transfer_functions->sis_input_b_FO2_rising->SetDefaultValues(default_prev_out_falling, 0.2);
 	transfer_functions->inverter_falling->SetDefaultValues(default_prev_out_rising, max_shift);
 	transfer_functions->inverter_rising->SetDefaultValues(default_prev_out_falling, max_shift);
 }

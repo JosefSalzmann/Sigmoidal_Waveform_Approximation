@@ -46,6 +46,14 @@ SIS_B_F ANN tfs/SIS_B_falling_model
 SIS_B_F OFF tfs/SIS_B_falling_input_stretched.off
 SIS_B_R ANN tfs/SIS_B_rising_model
 SIS_B_R OFF tfs/SIS_B_rising_input_stretched.off
+SIS_A_FO2_F ANN tfs/SIS_A_FO2_falling_model
+SIS_A_FO2_F OFF tfs/SIS_A_FO2_falling_input_stretched.off
+SIS_A_FO2_R ANN tfs/SIS_A_FO2_rising_model
+SIS_A_FO2_R OFF tfs/SIS_A_FO2_rising_input_stretched.off
+SIS_B_FO2_F ANN tfs/SIS_B_FO2_falling_model
+SIS_B_FO2_F OFF tfs/SIS_B_FO2_falling_input_stretched.off
+SIS_B_FO2_R ANN tfs/SIS_B_FO2_rising_model
+SIS_B_FO2_R OFF tfs/SIS_B_FO2_rising_input_stretched.off
 Inverter_F ANN tfs/Inverter_falling_model
 Inverter_F OFF tfs/Inverter_falling_input_stretched.off
 Inverter_R ANN tfs/Inverter_rising_model
