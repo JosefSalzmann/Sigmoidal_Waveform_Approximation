@@ -300,25 +300,50 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
  */
 TransitionParameters LogicGate::CaclulateSISParametersAtInput(TransitionParameters prev_outp_tr, TransitionParameters current_input_tr, Input input) {
 	if (gate_type == NOR) {
-		if (input == Input_A) {
-			if (current_input_tr.steepness > 0) {
-				// rising transition at input A
-				return transfer_functions->sis_input_a_rising->CalculatePropagation(
-				    {current_input_tr, prev_outp_tr});
+		if (this->subscribers.size() == 1) {
+			if (input == Input_A) {
+				if (current_input_tr.steepness > 0) {
+					// rising transition at input A
+					return transfer_functions->sis_input_a_rising->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				} else {
+					// falling transition at input A
+					return transfer_functions->sis_input_a_falling->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				}
 			} else {
-				// falling transition at input A
-				return transfer_functions->sis_input_a_falling->CalculatePropagation(
-				    {current_input_tr, prev_outp_tr});
+				if (current_input_tr.steepness > 0) {
+					// rising transition at input B
+					return transfer_functions->sis_input_b_rising->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				} else {
+					// falling transition at input B
+					return transfer_functions->sis_input_b_falling->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				}
 			}
 		} else {
-			if (current_input_tr.steepness > 0) {
-				// rising transition at input B
-				return transfer_functions->sis_input_b_rising->CalculatePropagation(
-				    {current_input_tr, prev_outp_tr});
+			// use FO2 transfer_functions
+			if (input == Input_A) {
+				if (current_input_tr.steepness > 0) {
+					// rising transition at input A
+					return transfer_functions->sis_input_a_FO2_rising->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				} else {
+					// falling transition at input A
+					return transfer_functions->sis_input_a_FO2_falling->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				}
 			} else {
-				// falling transition at input B
-				return transfer_functions->sis_input_b_falling->CalculatePropagation(
-				    {current_input_tr, prev_outp_tr});
+				if (current_input_tr.steepness > 0) {
+					// rising transition at input B
+					return transfer_functions->sis_input_b_FO2_rising->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				} else {
+					// falling transition at input B
+					return transfer_functions->sis_input_b_FO2_falling->CalculatePropagation(
+					    {current_input_tr, prev_outp_tr});
+				}
 			}
 		}
 	} else {  //(gate_type == INV)

@@ -278,7 +278,7 @@ ParsedTFModel CircuitFileParser::GetParsedTFModel(const std::string& line) {
  * @brief Order the parsed transfer functions in a defined way
  */
 void CircuitFileParser::OrderTransferFunctions() {
-	ParsedTFModel parsed_tf_models_arr[12];
+	ParsedTFModel parsed_tf_models_arr[20];
 	for (auto it = unordered_parsed_tf_models.begin(); it < unordered_parsed_tf_models.end(); it++) {
 		ParsedTFModel current_model = *it;
 		if (CompareTFModel(current_model, "SIS_A_F", "ANN")) {
@@ -297,14 +297,30 @@ void CircuitFileParser::OrderTransferFunctions() {
 			parsed_tf_models_arr[6] = current_model;
 		} else if (CompareTFModel(current_model, "SIS_B_R", "OFF")) {
 			parsed_tf_models_arr[7] = current_model;
-		} else if (CompareTFModel(current_model, "Inverter_F", "ANN")) {
+		} else if (CompareTFModel(current_model, "SIS_A_FO2_F", "ANN")) {
 			parsed_tf_models_arr[8] = current_model;
-		} else if (CompareTFModel(current_model, "Inverter_F", "OFF")) {
+		} else if (CompareTFModel(current_model, "SIS_A_FO2_F", "OFF")) {
 			parsed_tf_models_arr[9] = current_model;
-		} else if (CompareTFModel(current_model, "Inverter_R", "ANN")) {
+		} else if (CompareTFModel(current_model, "SIS_A_FO2_R", "ANN")) {
 			parsed_tf_models_arr[10] = current_model;
-		} else if (CompareTFModel(current_model, "Inverter_R", "OFF")) {
+		} else if (CompareTFModel(current_model, "SIS_A_FO2_R", "OFF")) {
 			parsed_tf_models_arr[11] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_FO2_F", "ANN")) {
+			parsed_tf_models_arr[12] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_FO2_F", "OFF")) {
+			parsed_tf_models_arr[13] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_FO2_R", "ANN")) {
+			parsed_tf_models_arr[14] = current_model;
+		} else if (CompareTFModel(current_model, "SIS_B_FO2_R", "OFF")) {
+			parsed_tf_models_arr[15] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_F", "ANN")) {
+			parsed_tf_models_arr[16] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_F", "OFF")) {
+			parsed_tf_models_arr[17] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_R", "ANN")) {
+			parsed_tf_models_arr[18] = current_model;
+		} else if (CompareTFModel(current_model, "Inverter_R", "OFF")) {
+			parsed_tf_models_arr[19] = current_model;
 		}
 	}
 	for (int i = 0; i < (int)unordered_parsed_tf_models.size(); i++) {

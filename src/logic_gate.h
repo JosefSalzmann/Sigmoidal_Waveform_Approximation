@@ -54,6 +54,10 @@ enum ANNSISTYPE {
 	ARISING,
 	BFALLING,
 	BRISING,
+	AFALLING_FO2,
+	ARISING_FO2,
+	BFALLING_FO2,
+	BRISING_FO2,
 	INVERTERFALLING,
 	INVERTERRISING
 };
@@ -111,6 +115,10 @@ struct TFCollection {
 	std::shared_ptr<TransferFunction> sis_input_a_rising;
 	std::shared_ptr<TransferFunction> sis_input_b_falling;
 	std::shared_ptr<TransferFunction> sis_input_b_rising;
+	std::shared_ptr<TransferFunction> sis_input_a_FO2_falling;
+	std::shared_ptr<TransferFunction> sis_input_a_FO2_rising;
+	std::shared_ptr<TransferFunction> sis_input_b_FO2_falling;
+	std::shared_ptr<TransferFunction> sis_input_b_FO2_rising;
 	std::shared_ptr<TransferFunction> inverter_falling;
 	std::shared_ptr<TransferFunction> inverter_rising;
 };
@@ -183,6 +191,7 @@ class LogicGate : public TransitionSource, public std::enable_shared_from_this<L
 	void PropagateTransitionNOR(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
 	void PropagateTransitionINV(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule);
 	std::shared_ptr<TransitionSource>& GetInputSource(Input input);
+	void CheckInputOutputConsistenty(double time, const std::shared_ptr<TransitionSchedule>& schedule);
 	FunctionType GetType();
 };
 
