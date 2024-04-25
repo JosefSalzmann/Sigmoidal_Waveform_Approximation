@@ -114,10 +114,6 @@ void LogicGate::PropagateTransition(const std::shared_ptr<Transition>& transitio
  * Mark transitons as canceled if cancelation happens.
  */
 void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transition, Input input, const std::shared_ptr<TransitionSchedule>& schedule) {
-	// if (output_node_name.compare("OA_9") == 0 && transition->parameters.shift > 102) {
-	// 	int debug = 0;
-	// }
-
 	if (transition->cancelation) {
 		return;
 	}
@@ -189,16 +185,12 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 		double latest_shift = (input == Input_A) ? latest_valid_input_b_tr->parameters.shift : latest_valid_input_a_tr->parameters.shift;
 		PLOG_DEBUG_IF(logging) << "No propagation from " << input_name << ", latest other input transition was (" << std::to_string(latest_steepness) << "," << std::to_string(latest_shift) << ").";
 		return;
-	}
-
-	// TODO: find better way to make sure that the last output transition was not canceled
-	// while (output_transitions.back()->cancelation) {
-	// 	output_transitions.pop_back();
-	// }
-
-	if (latest_valid_output_tr->parameters.steepness * transition->parameters.steepness < 0) {
-		// not same sign (but should be same sign)
-		int debug = 1;
+	} else if ((input == Input_A && latest_valid_input_b_tr->parameters.steepness < 0) ||
+	           (input == Input_B && latest_valid_input_a_tr->parameters.steepness < 0)) {
+		if (latest_valid_output_tr->parameters.steepness * transition->parameters.steepness < 0) {
+			PLOG_DEBUG_IF(logging) << "Output already consistent with inputs (something bad happended).";
+			return;
+		}
 	}
 
 	generated_outp_tr_params = CaclulateSISParametersAtInput(latest_valid_output_tr->parameters, transition->parameters, input);
@@ -219,9 +211,6 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 	/*
 	 * Check for cancelation
 	 */
-	if (output_node_name.compare("XNOR_3_NUM73_OUT") == 0 && transition->parameters.shift > 4.30) {
-		int debug = 1;
-	}
 	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
 		PLOG_DEBUG_IF(logging) << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
 		                       << " at Gate " << this->gate_name << ".";
@@ -280,9 +269,6 @@ void LogicGate::PropagateTransitionINV(const std::shared_ptr<Transition>& transi
 	 * Check for cancelation
 	 */
 	if (CheckCancelation(latest_valid_output_tr->parameters, generated_outp_tr_params)) {
-		// if (output_node_name.compare("OA_1") == 0 && transition->parameters.shift > 100) {
-		// 	int debug = 0;
-		// }
 		PLOG_DEBUG_IF(logging) << "Would generate Transition: " << std::to_string(generated_outp_tr_params.steepness) << "," << std::to_string(generated_outp_tr_params.shift)
 		                       << " at Gate " << this->gate_name << ".";
 		CancelTransition(latest_valid_output_tr, schedule);
@@ -464,7 +450,7 @@ double LogicGate::CalculatePulseValue(double vdd, double x, TransitionParameters
  */
 bool LogicGate::CheckCancelation(TransitionParameters transition1, TransitionParameters transition2) {
 	if (transition1.steepness * transition2.steepness > 0) {
-		// both same sign
+		// both same sign - this must not happen
 		PLOG_DEBUG_IF(logging) << "Same-Sign Violation at " << this->gate_name;
 	}
 	double vdd = 1.2;
