@@ -124,7 +124,6 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 	std::shared_ptr<Transition> latest_valid_input_a_tr;
 	std::shared_ptr<Transition> latest_valid_input_b_tr;
 	std::shared_ptr<Transition> latest_valid_output_tr;
-	std::shared_ptr<Transition> second_latest_valid_output_tr;
 
 	for (auto it = input_a_transitions.rbegin(); it != input_a_transitions.rend(); it++) {
 		if (!(*it)->cancelation) {
@@ -140,17 +139,10 @@ void LogicGate::PropagateTransitionNOR(const std::shared_ptr<Transition>& transi
 		}
 	}
 
-	bool latest_v_out_tr_found = false;
 	for (auto it = output_transitions.rbegin(); it != output_transitions.rend(); it++) {
 		if (!(*it)->cancelation) {
-			if (!latest_v_out_tr_found) {
-				latest_valid_output_tr = *it;
-				latest_v_out_tr_found = true;
-				break;
-			} else {
-				second_latest_valid_output_tr = *it;
-				break;
-			}
+			latest_valid_output_tr = *it;
+			break;
 		}
 	}
 
