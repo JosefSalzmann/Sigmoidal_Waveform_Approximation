@@ -1,0 +1,60 @@
+INPUTS
+N1 N1.csv
+N2 N2.csv
+N3 N3.csv
+N6 N6.csv
+N7 N7.csv
+
+GATES
+NOR XNOR_1_NUM1 XNOR_1_NUM1_OUT N1 GND
+NOR XNOR_2_NUM1 XNOR_2_NUM1_OUT GND N3
+NOR XNOR_3_NUM1 XNOR_3_NUM1_OUT XNOR_1_NUM1_OUT XNOR_2_NUM1_OUT
+NOR XNOR_4_NUM1 N10 XNOR_3_NUM1_OUT GND
+NOR XNOR_1_NUM2 XNOR_1_NUM2_OUT N3 GND
+NOR XNOR_2_NUM2 XNOR_2_NUM2_OUT GND N6
+NOR XNOR_3_NUM2 XNOR_3_NUM2_OUT XNOR_1_NUM2_OUT XNOR_2_NUM2_OUT
+NOR XNOR_4_NUM2 N11 XNOR_3_NUM2_OUT GND
+NOR XNOR_1_NUM3 XNOR_1_NUM3_OUT N2 GND
+NOR XNOR_2_NUM3 XNOR_2_NUM3_OUT GND N11
+NOR XNOR_3_NUM3 XNOR_3_NUM3_OUT XNOR_1_NUM3_OUT XNOR_2_NUM3_OUT
+NOR XNOR_4_NUM3 N16 XNOR_3_NUM3_OUT GND
+NOR XNOR_1_NUM4 XNOR_1_NUM4_OUT N11 GND
+NOR XNOR_2_NUM4 XNOR_2_NUM4_OUT GND N7
+NOR XNOR_3_NUM4 XNOR_3_NUM4_OUT XNOR_1_NUM4_OUT XNOR_2_NUM4_OUT
+NOR XNOR_4_NUM4 N19 XNOR_3_NUM4_OUT GND
+NOR XNOR_1_NUM5 XNOR_1_NUM5_OUT N10 GND
+NOR XNOR_2_NUM5 XNOR_2_NUM5_OUT GND N16
+NOR XNOR_3_NUM5 XNOR_3_NUM5_OUT XNOR_1_NUM5_OUT XNOR_2_NUM5_OUT
+NOR XNOR_4_NUM5 N22 XNOR_3_NUM5_OUT GND
+NOR XNOR_1_NUM6 XNOR_1_NUM6_OUT N16 GND
+NOR XNOR_2_NUM6 XNOR_2_NUM6_OUT GND N19
+NOR XNOR_3_NUM6 XNOR_3_NUM6_OUT XNOR_1_NUM6_OUT XNOR_2_NUM6_OUT
+NOR XNOR_4_NUM6 N23 XNOR_3_NUM6_OUT GND
+
+
+OUTPUTS
+N22
+N23
+
+
+TRANSFERFUNCTIONS
+SIS_A_F ANN ../benchmarking/tfs/SIS_A_falling_model
+SIS_A_F OFF ../benchmarking/tfs/SIS_A_falling_input_stretched.off
+SIS_A_R ANN ../benchmarking/tfs/SIS_A_rising_model
+SIS_A_R OFF ../benchmarking/tfs/SIS_A_rising_input_stretched.off
+SIS_B_F ANN ../benchmarking/tfs/SIS_B_falling_model
+SIS_B_F OFF ../benchmarking/tfs/SIS_B_falling_input_stretched.off
+SIS_B_R ANN ../benchmarking/tfs/SIS_B_rising_model
+SIS_B_R OFF ../benchmarking/tfs/SIS_B_rising_input_stretched.off
+SIS_A_FO2_F ANN ../benchmarking/tfs/SIS_A_FO2_falling_model
+SIS_A_FO2_F OFF ../benchmarking/tfs/SIS_A_FO2_falling_input_stretched.off
+SIS_A_FO2_R ANN ../benchmarking/tfs/SIS_A_FO2_rising_model
+SIS_A_FO2_R OFF ../benchmarking/tfs/SIS_A_FO2_rising_input_stretched.off
+SIS_B_FO2_F ANN ../benchmarking/tfs/SIS_B_FO2_falling_model
+SIS_B_FO2_F OFF ../benchmarking/tfs/SIS_B_FO2_falling_input_stretched.off
+SIS_B_FO2_R ANN ../benchmarking/tfs/SIS_B_FO2_rising_model
+SIS_B_FO2_R OFF ../benchmarking/tfs/SIS_B_FO2_rising_input_stretched.off
+Inverter_F ANN ../benchmarking/tfs/Inverter_falling_model
+Inverter_F OFF ../benchmarking/tfs/Inverter_falling_input_stretched.off
+Inverter_R ANN ../benchmarking/tfs/Inverter_rising_model
+Inverter_R OFF ../benchmarking/tfs/Inverter_rising_input_stretched.off
