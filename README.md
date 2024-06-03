@@ -1,4 +1,4 @@
-# Efficient MIS Modelling
+# Waveform Prediction of Digital Circuits by Sigmoidal Approximation
 
 ## Currently work in progress
 
